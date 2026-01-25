@@ -1,0 +1,140 @@
+<!<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Alam CSC Center</title>
+
+  <style>
+    body{
+      font-family: Arial;
+      margin:0;
+      background:#f2f2f2;
+      text-align:center;
+    }
+
+    header{
+      background:#008000;
+      color:white;
+      padding:15px;
+      font-size:22px;
+    }
+
+    section{
+      padding:20px;
+    }
+
+    .btn{
+      display:inline-block;
+      background:#25D366;
+      color:white;
+      padding:12px 20px;
+      margin:10px;
+      text-decoration:none;
+      border-radius:5px;
+      font-size:16px;
+    }
+
+    .card{
+      background:white;
+      margin:10px;
+      padding:15px;
+      border-radius:5px;
+      box-shadow:0 0 5px gray;
+    }
+
+    footer{
+      background:#008000;
+      color:white;
+      padding:10px;
+      margin-top:20px;
+    }
+  </style>
+</head>
+
+<body>
+
+<header>
+  Alam CSC Center
+</header>
+
+<section>
+  <h2>Sabhi Sarkari Seva Ghar Baithe Online</h2>
+
+  <a class="btn" href="https://wa.me/919918755840">
+    WhatsApp Karein
+  </a>
+</section>
+
+<section>
+  <h3>Hamari Services</h3>
+
+  <div class="card">Aadhaar Services</div>
+  <div class="card">PAN Card</div>
+  <div class="card">Ayushman Card</div>
+  <div class="card">Income Certificate</div>
+  <div class="card">Ration Card</div>
+  <div class="card">Driving License</div>
+</section>
+<section>
+  <h3>Online Apply Karein</h3>
+
+  <form id="applyForm">
+
+    <input type="text" placeholder="Naam" required><br><br>
+
+    <input type="tel" placeholder="Mobile Number" required><br><br>
+
+    <<select id="service" required>
+      <option value="">Service Chune</option>
+      <option>Aadhaar</option>
+      <option>PAN</option>
+      <option>Ayushman</option>
+      <option>Ration</option>
+      <option>License</option>
+    </select><br><br>
+
+    <input type="file"><br><br>
+
+    <button type="submit">Submit</button>
+
+  </form>
+</section>
+<section>
+  <h3>Contact</h3>
+  <p>📞 Mobile: 9918755840</p>
+  <p>📍 Address: Aapka Area Yahan Likho</p>
+</section>
+
+<footer>
+  © 2026 Alam CSC Center
+</footer>
+<<script>
+document.getElementById("applyForm").addEventListener("submit", function(e){
+
+  e.preventDefault();
+
+  let name = document.querySelector("#applyForm input[type=text]").value;
+  let mobile = document.querySelector("#applyForm input[type=tel]").value;
+  let service = document.getElementById("service").value;
+
+  let data = {
+    name: name,
+    mobile: mobile,
+    service: service,
+    date: new Date().toLocaleString()
+  };
+
+  let records = JSON.parse(localStorage.getItem("cscData")) || [];
+  records.push(data);
+
+  localStorage.setItem("cscData", JSON.stringify(records));
+
+  alert("Form Submit Ho Gaya!");
+
+  document.getElementById("applyForm").reset();
+
+});
+</script>
+</body>
+</html>
