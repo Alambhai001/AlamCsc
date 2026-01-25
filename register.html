@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Register</title>
+
+<style>
+body{
+  font-family: Arial;
+  background:#f2f2f2;
+  text-align:center;
+}
+
+.box{
+  background:white;
+  width:300px;
+  margin:100px auto;
+  padding:20px;
+  border-radius:5px;
+}
+
+input,button{
+  width:90%;
+  padding:10px;
+  margin:10px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="box">
+
+<h2>Register</h2>
+
+<input type="text" id="username" placeholder="Username" required>
+
+<input type="email" id="email" placeholder="Email ID" required>
+
+<input type="password" id="password" placeholder="Password (min 6 digit)" required>
+
+<button onclick="register()">Register</button>
+
+<p id="msg"></p>
+
+<a href="login.html">Already have account? Login</a>
+
+</div>
+
+<script>
+
+function register(){
+
+  let user = document.getElementById("username").value;
+  let email = document.getElementById("email").value;
+  let pass = document.getElementById("password").value;
+
+  if(user=="" || email=="" || pass==""){
+    msg("Fill all fields");
+    return;
+  }
+
+  if(pass.length < 6){
+    msg("Password minimum 6 digit ka hona chahiye");
+    return;
+  }
+
+  let data = {
+    username:user,
+    email:email,
+    password:pass
+  };
+
+  localStorage.setItem("userData",JSON.stringify(data));
+
+  alert("Registration Successful!");
+
+  window.location="login.html";
+}
+
+function msg(t){
+  document.getElementById("msg").innerHTML=t;
+}
+
+</script>
+
+</body>
+</html>
