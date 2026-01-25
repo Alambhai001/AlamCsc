@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Admin Panel</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+body{
+  font-family: Arial;
+  background:#f2f2f2;
+  padding:20px;
+}
+
+h2{
+  background:#008000;
+  color:white;
+  padding:10px;
+}
+
+table{
+  width:100%;
+  border-collapse:collapse;
+  background:white;
+}
+
+th,td{
+  border:1px solid gray;
+  padding:8px;
+  text-align:center;
+}
+
+th{
+  background:#25D366;
+  color:white;
+}
+
+button{
+  padding:8px 15px;
+  background:red;
+  color:white;
+  border:none;
+}
+</style>
+</head>
+
+<body>
+
+<h2>CSC Admin Panel</h2>
+
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Mobile</th>
+<th>Service</th>
+<th>Date</th>
+</tr>
+</thead>
+
+<tbody id="data"></tbody>
+</table>
+
+<br>
+
+<button onclick="clearData()">Delete All</button>
+
+<script>
+
+let records = JSON.parse(localStorage.getItem("cscData")) || [];
+
+let table = document.getElementById("data");
+
+records.forEach(item => {
+
+  let row = `
+  <tr>
+  <td>${item.name}</td>
+  <td>${item.mobile}</td>
+  <td>${item.service}</td>
+  <td>${item.date}</td>
+  </tr>
+  `;
+
+  table.innerHTML += row;
+
+});
+
+function clearData(){
+
+ if(confirm("Delete all data?")){
+   localStorage.removeItem("cscData");
+   location.reload();
+ }
+
+}
+
+</script>
+
+</body>
+</html>
