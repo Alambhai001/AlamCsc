@@ -136,5 +136,30 @@ document.getElementById("applyForm").addEventListener("submit", function(e){
 
 });
 </script>
+  <!-- Firebase Start -->
+<script type="module">
+
+// Import Firebase
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
+import { getAuth } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
+
+// Firebase Config
+const firebaseConfig = {
+  apiKey: "AIzaSyA8O4kOinBczBQ8r9mbtOdH98X70ezpgYk",
+  authDomain: "new-prototype-s7zo4.firebaseapp.com",
+  projectId: "new-prototype-s7zo4",
+  storageBucket: "new-prototype-s7zo4.firebasestorage.app",
+  messagingSenderId: "406938721232",
+  appId: "1:406938721232:web:bee564c397a8c9355af7d5"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+
+console.log("Firebase Connected Successfully ✅");
+
+</script>
+<!-- Firebase End -->
 </body>
 </html>
