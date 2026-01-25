@@ -1,29 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Login - Alam CSC</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body{
+      font-family: Arial;
+      background:#f2f2f2;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      height:100vh;
+    }
+
+    .box{
+      background:#fff;
+      padding:20px;
+      width:300px;
+      border-radius:8px;
+      text-align:center;
+      box-shadow:0 0 10px #aaa;
+    }
+
+    input{
+      width:100%;
+      padding:10px;
+      margin:8px 0;
+    }
+
+    button{
+      width:100%;
+      padding:10px;
+      background:green;
+      color:white;
+      border:none;
+      cursor:pointer;
+    }
+
+    #msg{
+      color:red;
+      margin-top:10px;
+    }
+
+    a{
+      display:block;
+      margin-top:10px;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="box">
+
+  <h2>Login</h2>
+
+  <input type="text" id="user" placeholder="Username">
+
+  <input type="password" id="pass" placeholder="Password">
+
+  <button onclick="login()">Login</button>
+
+  <p id="msg"></p>
+
+  <a href="register.html">Create Account</a>
+
+</div>
+
+
 <script>
 function login(){
 
-  let u = document.getElementById("user").value;
-  let p = document.getElementById("pass").value;
+  let u = document.getElementById("user").value.trim();
+  let p = document.getElementById("pass").value.trim();
 
-  let data = JSON.parse(localStorage.getItem("userData"));
+  let data = localStorage.getItem("userData");
 
   if(!data){
-    msg("Please Register First");
+    document.getElementById("msg").innerHTML = "Please Register First";
     return;
   }
 
-  if(u == data.username && p == data.password){
+  let user = JSON.parse(data);
+
+  if(u === user.username && p === user.password){
 
     alert("Login Successful!");
-    window.location = "index.html";
+    window.location.href = "index.html";
 
   }else{
 
-    msg("Wrong Username or Password");
+    document.getElementById("msg").innerHTML = "Wrong Username or Password";
   }
-
-}
-
-function msg(t){
-  document.getElementById("msg").innerHTML = t;
 }
 </script>
+
+</body>
+</html>
