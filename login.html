@@ -1,5 +1,4 @@
 <script>
-
 function login(){
 
   let u = document.getElementById("user").value;
@@ -7,17 +6,15 @@ function login(){
 
   let data = JSON.parse(localStorage.getItem("userData"));
 
-  // Agar register nahi hua
   if(!data){
     msg("Please Register First");
     return;
   }
 
-  // Login check
   if(u == data.username && p == data.password){
 
     alert("Login Successful!");
-    window.location = "/AlamCsc/index.html";
+    window.location = "index.html";
 
   }else{
 
@@ -29,5 +26,4 @@ function login(){
 function msg(t){
   document.getElementById("msg").innerHTML = t;
 }
-
 </script>
