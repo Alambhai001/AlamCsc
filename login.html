@@ -14,7 +14,12 @@ function login(){
   }
 
   // Login check
-  window.location = "/AlamCsc/index.html";
+  if(u == data.username && p == data.password){
+
+    alert("Login Successful!");
+    window.location = "/AlamCsc/index.html";
+
+  }else{
 
     msg("Wrong Username or Password");
   }
