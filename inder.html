@@ -1,0 +1,29 @@
+async function handleLogin() {
+
+  const email = document.getElementById('loginEmail').value;
+  const pass = document.getElementById('loginPass').value;
+
+  try {
+
+    const userCred = await auth.signInWithEmailAndPassword(email, pass);
+
+    const doc = await db.collection("Users")
+                       .doc(userCred.user.uid)
+                       .get();
+
+    const data = doc.data();
+
+    if(data.status === "Blocked"){
+      alert("Account Blocked!");
+      return;
+    }
+
+    // ❌ Alert hata diya
+    window.location.href = "inder.html"; // ✅ Direct open
+
+  } catch(e) {
+
+    document.getElementById("msg").innerHTML = e.message;
+
+  }
+}
