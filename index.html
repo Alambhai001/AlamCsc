@@ -3,60 +3,79 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>Alam CSC Center</title>
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
 <style>
+
 body{
   margin:0;
   font-family:Poppins,Arial,sans-serif;
   background:#f4f6f9;
   text-align:center;
-  color:#222;
 }
 
+/* Header */
 header{
   background:linear-gradient(90deg,#0f5132,#198754);
   color:white;
-  padding:18px;
+  padding:20px;
   font-size:24px;
 }
 
+/* Banner */
 .banner{
   background:linear-gradient(45deg,#198754,#25d366);
   color:white;
-  padding:30px;
+  padding:25px;
   font-weight:bold;
 }
 
+/* Services */
 .services{
   display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(120px,1fr));
+  grid-template-columns:repeat(auto-fit,minmax(130px,1fr));
   gap:15px;
   padding:20px;
 }
 
 .service{
   background:white;
-  padding:15px;
-  border-radius:12px;
+  padding:18px;
+  border-radius:15px;
   box-shadow:0 3px 10px rgba(0,0,0,0.2);
+  cursor:pointer;
+  transition:0.3s;
 }
 
-form{
+.service:hover{
+  transform:scale(1.05);
+  background:#e8fff2;
+}
+
+.service i{
+  font-size:28px;
+  margin-bottom:6px;
+  color:#198754;
+}
+
+/* Form */
+#applyBox{
+  display:none;
   background:white;
-  max-width:380px;
+  max-width:400px;
   margin:20px auto;
   padding:25px;
-  border-radius:12px;
-  box-shadow:0 3px 10px rgba(0,0,0,0.3);
+  border-radius:15px;
+  box-shadow:0 4px 15px rgba(0,0,0,0.3);
 }
 
-input,select,button{
+input,textarea,button{
   width:100%;
   padding:12px;
-  margin:7px 0;
+  margin:8px 0;
   border-radius:6px;
   border:1px solid #ccc;
 }
@@ -66,13 +85,23 @@ button{
   color:white;
   border:none;
   font-weight:bold;
+  border-radius:50px;
 }
 
+.back{
+  background:none;
+  color:#198754;
+  border:none;
+}
+
+/* Footer */
 footer{
   background:#0f5132;
   color:white;
-  padding:12px;
+  padding:15px;
+  margin-top:40px;
 }
+
 </style>
 </head>
 
@@ -89,27 +118,129 @@ Sabhi Sarkari Seva Ghar Baithe Online
 
 <h2>Hamari Services</h2>
 
-<div class="services">
+<!-- SERVICES -->
+<div class="services" id="serviceBox">
 
-<div class="service"><i class="fa-solid fa-id-card"></i><br>Aadhaar</div>
-<div class="service"><i class="fa-solid fa-address-card"></i><br>PAN</div>
-<div class="service"><i class="fa-solid fa-heart-pulse"></i><br>Ayushman</div>
-<div class="service"><i class="fa-solid fa-basket-shopping"></i><br>Ration</div>
-<div class="service"><i class="fa-solid fa-car"></i><br>License</div>
-<div class="service"><i class="fa-solid fa-graduation-cap"></i><br>Scholarship</div>
+<div class="service" onclick="openForm('Aadhaar')">
+<i class="fa-solid fa-id-card"></i><br>Aadhaar
+</div>
+
+<div class="service" onclick="openForm('PAN')">
+<i class="fa-solid fa-address-card"></i><br>PAN
+</div>
+
+<div class="service" onclick="openForm('Ayushman')">
+<i class="fa-solid fa-heart-pulse"></i><br>Ayushman
+</div>
+
+<div class="service" onclick="openForm('Ration')">
+<i class="fa-solid fa-basket-shopping"></i><br>Ration
+</div>
+
+<div class="service" onclick="openForm('License')">
+<i class="fa-solid fa-car"></i><br>License
+</div>
+
+<div class="service" onclick="openForm('Scholarship')">
+<i class="fa-solid fa-graduation-cap"></i><br>Scholarship
+</div>
 
 </div>
-<section id="csc-info" style="padding:20px; max-width:900px; margin:auto; background:#fff; border-radius:10px; box-shadow:0 0 10px rgba(0,0,0,0.1); font-family:Arial,sans-serif;">
 
-  <h1>ALAM CSC CENTER – Digital Seva Kendra</h1>
+<!-- FORM -->
+<div id="applyBox">
 
-  <p style="font-size:16px; color:#333;">
-    Alam CSC Center Digital Seva Kendra, part of Common Service Centres (CSC) programme of Digital India.
-    Located in your area with services to help residents access various online government services. 9
-  </p>
+<h3 id="serviceTitle"></h3>
 
-  <div style="margin:15px 0;">
-    <a href="tel:9918755840" style="margin-right:10px; color:#198754;">📞 Call</a>
+<input type="text" id="name" placeholder="Full Name" required>
+
+<input type="tel" id="mobile" maxlength="10" placeholder="Mobile Number" required>
+
+<textarea id="address" placeholder="Full Address"></textarea>
+
+<label>Upload Documents</label>
+<input type="file" id="docs" multiple>
+
+<p style="background:#f1f1f1;padding:8px;border-radius:6px;">
+UPI: <b>9336678937@ybl</b>
+</p>
+
+<input type="checkbox" id="paid"> Payment Done ✔️
+
+<button onclick="sendForm()">Submit on WhatsApp</button>
+
+<button class="back" onclick="goBack()">← Back</button>
+
+</div>
+
+
+<footer>
+© 2026 Alam CSC Center
+</footer>
+
+
+<script>
+
+let selectedService="";
+
+/* Open Form */
+function openForm(service){
+
+  selectedService=service;
+
+  document.getElementById("serviceBox").style.display="none";
+  document.getElementById("applyBox").style.display="block";
+
+  document.getElementById("serviceTitle").innerText=
+    service+" Application Form";
+
+  window.scrollTo(0,0);
+}
+
+/* Back */
+function goBack(){
+  location.reload();
+}
+
+/* Submit */
+function sendForm(){
+
+  let name=document.getElementById("name").value;
+  let mobile=document.getElementById("mobile").value;
+  let address=document.getElementById("address").value;
+  let paid=document.getElementById("paid").checked;
+  let docs=document.getElementById("docs").files.length;
+
+  if(!name || !mobile || !paid){
+    alert("Sab details bharo!");
+    return;
+  }
+
+  let msg=
+`NEW CSC APPLICATION
+
+Service: ${selectedService}
+
+Name: ${name}
+Mobile: ${mobile}
+Address: ${address}
+
+Documents: ${docs} files
+
+Payment: Done`;
+
+  let wa="919918755840";
+
+  window.open(
+    "https://wa.me/"+wa+"?text="+encodeURIComponent(msg)
+  );
+
+}
+
+</script>
+
+</body>
+</html>    <a href="tel:9918755840" style="margin-right:10px; color:#198754;">📞 Call</a>
     <a href="https://wa.me/919918755840" style="margin-right:10px; color:#25D366;">💬 WhatsApp</a>
     <a href="mailto:info@example.com" style="color:#0077cc;">✉️ Email</a>
   </div>
