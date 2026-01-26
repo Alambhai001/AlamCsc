@@ -5,86 +5,31 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Alam CSC Center</title>
 
-<!-- Font Awesome -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
 <style>
-
-/* Body */
 body{
   margin:0;
   font-family:Poppins,Arial,sans-serif;
   background:#f4f6f9;
   text-align:center;
   color:#222;
-  transition:0.3s;
 }
 
-/* Dark Mode */
-body.dark{
-  background:#121212;
-  color:#eee;
-}
-
-/* Header */
 header{
   background:linear-gradient(90deg,#0f5132,#198754);
   color:white;
   padding:18px;
   font-size:24px;
-  box-shadow:0 3px 10px rgba(0,0,0,0.2);
-  position:relative;
 }
 
-/* Dark Button */
-#darkBtn{
-  position:absolute;
-  right:15px;
-  top:15px;
-  border:none;
-  background:white;
-  padding:6px 12px;
-  border-radius:20px;
-  cursor:pointer;
-}
-
-/* Banner */
 .banner{
-  background:linear-gradient(-45deg,#198754,#0f5132,#25d366,#128c7e);
-  background-size:400% 400%;
-  animation:gradient 8s ease infinite;
+  background:linear-gradient(45deg,#198754,#25d366);
   color:white;
-  padding:40px 10px;
-  font-size:22px;
+  padding:30px;
   font-weight:bold;
 }
 
-@keyframes gradient{
-  0%{background-position:0% 50%}
-  50%{background-position:100% 50%}
-  100%{background-position:0% 50%}
-}
-
-/* Slider */
-.slider{
-  width:95%;
-  max-width:700px;
-  margin:20px auto;
-  border-radius:15px;
-  overflow:hidden;
-  box-shadow:0 5px 20px rgba(0,0,0,0.3);
-}
-
-.slider img{
-  width:100%;
-  display:none;
-}
-
-.slider img.active{
-  display:block;
-}
-
-/* Services */
 .services{
   display:grid;
   grid-template-columns:repeat(auto-fit,minmax(120px,1fr));
@@ -97,41 +42,22 @@ header{
   padding:15px;
   border-radius:12px;
   box-shadow:0 3px 10px rgba(0,0,0,0.2);
-  transition:0.3s;
 }
 
-body.dark .service{
-  background:#1e1e1e;
-}
-
-.service:hover{
-  transform:translateY(-5px);
-}
-
-.service i{
-  font-size:28px;
-  color:#198754;
-}
-
-/* Form */
 form{
   background:white;
-  max-width:400px;
+  max-width:380px;
   margin:20px auto;
   padding:25px;
-  border-radius:15px;
-  box-shadow:0 5px 15px rgba(0,0,0,0.3);
-}
-
-body.dark form{
-  background:#1e1e1e;
+  border-radius:12px;
+  box-shadow:0 3px 10px rgba(0,0,0,0.3);
 }
 
 input,select,button{
   width:100%;
   padding:12px;
   margin:7px 0;
-  border-radius:8px;
+  border-radius:6px;
   border:1px solid #ccc;
 }
 
@@ -140,21 +66,13 @@ button{
   color:white;
   border:none;
   font-weight:bold;
-  cursor:pointer;
 }
 
-/* Footer */
 footer{
   background:#0f5132;
   color:white;
   padding:12px;
-  margin-top:20px;
 }
-
-body.dark footer{
-  background:#000;
-}
-
 </style>
 </head>
 
@@ -163,23 +81,12 @@ body.dark footer{
 <header>
 Alam CSC Center<br>
 Digital Seva Portal
-
-<button id="darkBtn">🌙 Dark</button>
 </header>
 
-<!-- Banner -->
 <div class="banner">
 Sabhi Sarkari Seva Ghar Baithe Online
 </div>
 
-<!-- Slider -->
-<div class="slider">
-  <img src="https://source.unsplash.com/800x400/?office" class="active">
-  <img src="https://source.unsplash.com/800x400/?computer">
-  <img src="https://source.unsplash.com/800x400/?india,government">
-</div>
-
-<!-- Services -->
 <h2>Hamari Services</h2>
 
 <div class="services">
@@ -193,7 +100,6 @@ Sabhi Sarkari Seva Ghar Baithe Online
 
 </div>
 
-<!-- Apply Form -->
 <h2>Online Apply</h2>
 
 <form id="applyForm">
@@ -215,7 +121,6 @@ Sabhi Sarkari Seva Ghar Baithe Online
 
 </form>
 
-<!-- Contact -->
 <p>📞 9918755840</p>
 <p>📍 Aapka Address</p>
 
@@ -224,23 +129,6 @@ Sabhi Sarkari Seva Ghar Baithe Online
 </footer>
 
 <script>
-
-/* Dark Mode */
-document.getElementById("darkBtn").onclick=function(){
-  document.body.classList.toggle("dark");
-};
-
-/* Slider */
-let slides=document.querySelectorAll(".slider img");
-let i=0;
-
-setInterval(()=>{
-  slides[i].classList.remove("active");
-  i=(i+1)%slides.length;
-  slides[i].classList.add("active");
-},3000);
-
-/* WhatsApp Auto Send */
 document.getElementById("applyForm").addEventListener("submit",function(e){
 
   e.preventDefault();
@@ -259,376 +147,17 @@ document.getElementById("applyForm").addEventListener("submit",function(e){
 
 Name: ${name}
 Mobile: ${mobile}
-Service: ${service}
-Date: ${new Date().toLocaleString()}`;
+Service: ${service}`;
 
   let wa="919918755840";
 
   window.open("https://wa.me/"+wa+"?text="+encodeURIComponent(msg));
 
-  alert("Form Submit Ho Gaya ✅ WhatsApp Open Ho Gaya");
-
-  this.reset();
-});
-
-</script>
-
-</body>
-</html>  display:flex;
-  align-items:center;
-  justify-content:center;
-  color:white;
-  font-size:24px;
-  font-weight:bold;
-  background:linear-gradient(-45deg,#198754,#0f5132,#25d366,#128c7e);
-  background-size:400% 400%;
-  animation:gradient 8s ease infinite;
-}
-
-@keyframes gradient{
-  0%{background-position:0% 50%}
-  50%{background-position:100% 50%}
-  100%{background-position:0% 50%}
-}
-
-/* Slider */
-.slider{
-  width:95%;
-  max-width:700px;
-  margin:20px auto;
-  border-radius:15px;
-  overflow:hidden;
-  box-shadow:0 5px 20px rgba(0,0,0,0.3);
-}
-
-.slider img{
-  width:100%;
-  display:none;
-}
-
-.slider img.active{
-  display:block;
-}
-
-/* Services */
-.services{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
-  gap:15px;
-  padding:20px;
-}
-
-.service{
-  background:white;
-  padding:15px;
-  border-radius:12px;
-  text-align:center;
-  box-shadow:0 3px 10px rgba(0,0,0,0.2);
-  transition:0.3s;
-}
-
-.dark .service{
-  background:var(--darkcard);
-}
-
-.service:hover{
-  transform:translateY(-5px);
-}
-
-.service i{
-  font-size:30px;
-  color:var(--main);
-  margin-bottom:8px;
-}
-
-/* Form */
-form{
-  background:white;
-  max-width:400px;
-  margin:20px auto;
-  padding:25px;
-  border-radius:15px;
-  box-shadow:0 5px 15px rgba(0,0,0,0.3);
-}
-
-.dark form{
-  background:var(--darkcard);
-}
-
-input,select,button{
-  width:100%;
-  padding:10px;
-  margin:7px 0;
-  border-radius:6px;
-  border:1px solid #ccc;
-}
-
-button{
-  background:var(--main);
-  color:white;
-  border:none;
-  font-weight:bold;
-}
-
-/* Footer */
-footer{
-  background:#0f5132;
-  color:white;
-  padding:12px;
-  text-align:center;
-}
-
-.dark footer{
-  background:#000;
-}
-
-</style>
-</head>
-
-<body>
-
-<header>
-<h2>Alam CSC Center</h2>
-<p>Digital Seva Portal</p>
-
-<button id="darkBtn">🌙 Dark</button>
-</header>
-
-<!-- Banner -->
-<div class="banner">
-Sabhi Sarkari Seva Ghar Baithe Online
-</div>
-
-<!-- Slider -->
-<div class="slider">
-  <img src="https://source.unsplash.com/800x400/?office" class="active">
-  <img src="https://source.unsplash.com/800x400/?computer">
-  <img src="https://source.unsplash.com/800x400/?india,government">
-</div>
-
-<!-- Services -->
-<h2 style="text-align:center;">Hamari Services</h2>
-
-<div class="services">
-
-<div class="service"><i class="fa-solid fa-id-card"></i><br>Aadhaar</div>
-<div class="service"><i class="fa-solid fa-address-card"></i><br>PAN</div>
-<div class="service"><i class="fa-solid fa-heart-pulse"></i><br>Ayushman</div>
-<div class="service"><i class="fa-solid fa-basket-shopping"></i><br>Ration</div>
-<div class="service"><i class="fa-solid fa-car"></i><br>License</div>
-<div class="service"><i class="fa-solid fa-graduation-cap"></i><br>Scholarship</div>
-
-</div>
-
-<!-- Apply Form -->
-<h2 style="text-align:center;">Online Apply</h2>
-
-<form id="applyForm">
-
-<input type="text" id="name" placeholder="Naam" required>
-
-<input type="tel" id="mobile" maxlength="10" placeholder="Mobile Number" required>
-
-<select id="service" required>
-<option value="">Service Chune</option>
-<option>Aadhaar</option>
-<option>PAN</option>
-<option>Ayushman</option>
-<option>Ration</option>
-<option>License</option>
-</select>
-
-<button type="submit">Submit</button>
-
-</form>
-
-<!-- Contact -->
-<div style="text-align:center;">
-<p>📞 9918755840</p>
-<p>📍 Aapka Address</p>
-</div>
-
-<footer>
-© 2026 Alam CSC Center
-</footer>
-
-<script>
-
-/* Dark Mode */
-document.getElementById("darkBtn").onclick=function(){
-  document.body.classList.toggle("dark");
-};
-
-/* Slider */
-let slides=document.querySelectorAll(".slider img");
-let i=0;
-
-setInterval(()=>{
-  slides[i].classList.remove("active");
-  i=(i+1)%slides.length;
-  slides[i].classList.add("active");
-},3000);
-
-/* Form */
-document.getElementById("applyForm").addEventListener("submit",function(e){
-
-  e.preventDefault();
-
   alert("Form Submit Ho Gaya ✅");
 
   this.reset();
 });
-
 </script>
 
-</body>
-</html>  padding:25px 15px;
-}
-
-/* Button */
-.btn{
-  background: linear-gradient(45deg,#25D366,#128C7E);
-  color:white;
-  padding:14px 25px;
-  margin:12px;
-  border-radius:30px;
-  font-size:17px;
-  box-shadow:0 4px 10px rgba(0,0,0,0.2);
-  transition:0.3s;
-}
-
-.btn:hover{
-  transform:scale(1.05);
-}
-
-/* Cards */
-.card{
-  background:white;
-  margin:15px auto;
-  max-width:400px;
-  padding:20px;
-
-  <h2>Sabhi Sarkari Seva Ghar Baithe Online</h2>
-
-  <a class="btn" href="https://wa.me/919918755840">
-    WhatsApp Karein
-  </a>
-</section>
-
-<h3>Hamari Services</h3>
-<!-- cards -->
-
-</section>
-
-<!-- YAHAN PASTE KARO -->
-<h2>Online Services (Uttar Pradesh)</h2>
-
-<div class="services">
-
-<a href="https://uidai.gov.in" target="_blank">Aadhaar Update</a><br><br>
-
-<a href="https://www.onlineservices.nsdl.com" target="_blank">PAN Card Apply</a><br><br>
-
-<a href="https://voters.eci.gov.in" target="_blank">Voter ID</a><br><br>
-
-<a href="https://edistrict.up.gov.in" target="_blank">Caste / Income / Domicile</a><br><br>
-
-<a href="https://upscholarship.gov.in" target="_blank">Scholarship</a><br><br>
-
-<a href="https://www.upenergy.in" target="_blank">Electricity Bill</a><br><br>
-
-<a href="https://www.irctc.co.in" target="_blank">Train Ticket</a><br><br>
-
-<a href="https://www.up.gov.in" target="_blank">UP Government Portal</a>
-
-</div>
-<!-- YAHAN TAK -->
-
-<section>
-<h3>Online Apply Karein</h3>
-  <h3>Online Apply Karein</h3>
-
-  <form id="applyForm">
-
-    <input type="text" placeholder="Naam" required><br><br>
-
-    <input type="tel" placeholder="Mobile Number" required><br><br>
-
-    <<select id="service" required>
-      <option value="">Service Chune</option>
-      <option>Aadhaar</option>
-      <option>PAN</option>
-      <option>Ayushman</option>
-      <option>Ration</option>
-      <option>License</option>
-    </select><br><br>
-
-    <input type="file"><br><br>
-
-    <button type="submit">Submit</button>
-
-  </form>
-</section>
-<section>
-  <h3>Contact</h3>
-  <p>📞 Mobile: 9918755840</p>
-  <p>📍 Address: Aapka Area Yahan Likho</p>
-</section>
-
-<footer>
-  © 2026 Alam CSC Center
-</footer>
-<<script>
-document.getElementById("applyForm").addEventListener("submit", function(e){
-
-  e.preventDefault();
-
-  let name = document.querySelector("#applyForm input[type=text]").value;
-  let mobile = document.querySelector("#applyForm input[type=tel]").value;
-  let service = document.getElementById("service").value;
-
-  let data = {
-    name: name,
-    mobile: mobile,
-    service: service,
-    date: new Date().toLocaleString()
-  };
-
-  let records = JSON.parse(localStorage.getItem("cscData")) || [];
-  records.push(data);
-
-  localStorage.setItem("cscData", JSON.stringify(records));
-
-  alert("Form Submit Ho Gaya!");
-
-  document.getElementById("applyForm").reset();
-
-});
-</script>
-  <!-- Firebase Start -->
-<script type="module">
-
-// Import Firebase
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
-import { getAuth } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
-
-// Firebase Config
-const firebaseConfig = {
-  apiKey: "AIzaSyA8O4kOinBczBQ8r9mbtOdH98X70ezpgYk",
-  authDomain: "new-prototype-s7zo4.firebaseapp.com",
-  projectId: "new-prototype-s7zo4",
-  storageBucket: "new-prototype-s7zo4.firebasestorage.app",
-  messagingSenderId: "406938721232",
-  appId: "1:406938721232:web:bee564c397a8c9355af7d5"
-};
-
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-
-console.log("Firebase Connected Successfully ✅");
-
-</script>
-<!-- Firebase End -->
 </body>
 </html>
