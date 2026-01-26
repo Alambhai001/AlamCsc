@@ -1,99 +1,165 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<title>Admin Panel</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<style>
-body{
-  font-family: Arial;
-  background:#f2f2f2;
-  padding:20px;
-}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Master Control | Mumbai Elite</title>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root { --blue: #0072bc; --orange: #f37021; --green: #2e7d32; --red: #d32f2f; --purple: #6a1b9a; }
+        body { font-family: sans-serif; margin: 0; background: #f4f7f6; }
+        .admin-header { background: var(--blue); color: white; padding: 15px 5%; display: flex; justify-content: space-between; }
+        
+        /* Quick Add Form */
+        .quick-add { background: white; margin: 20px 5%; padding: 20px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); border-top: 5px solid var(--green); }
+        .form-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-top: 10px; }
+        input, select { padding: 10px; border: 1px solid #ddd; border-radius: 5px; }
+        .btn-add { background: var(--green); color: white; border: none; padding: 10px; border-radius: 5px; font-weight: bold; cursor: pointer; }
 
-h2{
-  background:#008000;
-  color:white;
-  padding:10px;
-}
-
-table{
-  width:100%;
-  border-collapse:collapse;
-  background:white;
-}
-
-th,td{
-  border:1px solid gray;
-  padding:8px;
-  text-align:center;
-}
-
-th{
-  background:#25D366;
-  color:white;
-}
-
-button{
-  padding:8px 15px;
-  background:red;
-  color:white;
-  border:none;
-}
-</style>
+        .table-container { margin: 20px 5%; background: white; border-radius: 10px; overflow-x: auto; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        table { width: 100%; border-collapse: collapse; min-width: 800px; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; font-size: 13px; }
+        .btn { padding: 5px 8px; border-radius: 4px; border: none; cursor: pointer; font-weight: bold; font-size: 11px; margin: 2px; }
+        .btn-block { background: var(--orange); color: white; }
+        .btn-delete { background: var(--red); color: white; }
+        .btn-unblock { background: var(--green); color: white; }
+    </style>
 </head>
-
 <body>
 
-<h2>CSC Admin Panel</h2>
+<div class="admin-header">
+    <h2><i class="fa-solid fa-user-shield"></i> Master Admin Control</h2>
+    <button onclick="loadUsers()" class="btn" style="background:white; color:var(--blue)">Refresh List</button>
+</div>
 
-<table>
-<thead>
-<tr>
-<th>Name</th>
-<th>Mobile</th>
-<th>Service</th>
-<th>Date</th>
-</tr>
-</thead>
+<div class="quick-add">
+    <h3><i class="fa-solid fa-plus-circle"></i> Force Add New User (FREE)</h3>
+    <div class="form-row">
+        <input type="text" id="addName" placeholder="Full Name">
+        <input type="email" id="addEmail" placeholder="Email Address">
+        <input type="password" id="addPass" placeholder="Password">
+        <input type="tel" id="addPhone" placeholder="Mobile Number">
+        <select id="addRole">
+            <option value="citizen">Aam Aadmi (Citizen)</option>
+            <option value="partner">Rental Partner (Rental)</option>
+        </select>
+        <button class="btn-add" onclick="forceAddUser()">ADD USER NOW</button>
+    </div>
+</div>
 
-<tbody id="data"></tbody>
-</table>
-
-<br>
-
-<button onclick="clearData()">Delete All</button>
+<div class="table-container">
+    <table>
+        <thead>
+            <tr>
+                <th>Name & Info</th>
+                <th>Role/Type</th>
+                <th>Status</th>
+                <th>Action Time</th>
+                <th>Master Controls</th>
+            </tr>
+        </thead>
+        <tbody id="userList"></tbody>
+    </table>
+</div>
 
 <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyA8O4kOinBczBQ8r9mbtOdH98X70ezpgYk",
+      authDomain: "new-prototype-s7zo4.firebaseapp.com",
+      projectId: "new-prototype-s7zo4",
+      storageBucket: "new-prototype-s7zo4.firebasestorage.app",
+      messagingSenderId: "406938721232",
+      appId: "1:406938721232:web:abfd93d796d2d37c5af7d5"
+    };
 
-let records = JSON.parse(localStorage.getItem("cscData")) || [];
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
 
-let table = document.getElementById("data");
+    // 1. FORCE ADD FUNCTION (Bina Rent ke Add karna)
+    async function forceAddUser() {
+        const name = document.getElementById('addName').value;
+        const email = document.getElementById('addEmail').value;
+        const pass = document.getElementById('addPass').value;
+        const phone = document.getElementById('addPhone').value;
+        const role = document.getElementById('addRole').value;
 
-records.forEach(item => {
+        if(!name || !email || !pass || !phone) return alert("Sari details bhariye!");
 
-  let row = `
-  <tr>
-  <td>${item.name}</td>
-  <td>${item.mobile}</td>
-  <td>${item.service}</td>
-  <td>${item.date}</td>
-  </tr>
-  `;
+        try {
+            // Firebase Auth mein user banana
+            const userCredential = await auth.createUserWithEmailAndPassword(email, pass);
+            const uid = userCredential.user.uid;
 
-  table.innerHTML += row;
+            // Database mein "Active" status ke sath save karna (Bina rent mangay)
+            await db.collection("Users").doc(uid).set({
+                name, email, phone, role,
+                status: 'Active', // Direct Active
+                timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                addedBy: 'Admin'
+            });
 
-});
+            alert(`${name} ko successfully ${role} banakar FREE add kar diya gaya hai!`);
+            location.reload();
+        } catch (e) { alert("Error: " + e.message); }
+    }
 
-function clearData(){
+    async function loadUsers() {
+        const snapshot = await db.collection("Users").get();
+        const list = document.getElementById('userList');
+        list.innerHTML = "";
+        
+        snapshot.forEach(doc => {
+            const data = doc.data();
+            const id = doc.id;
+            const expiry = data.blockUntil ? new Date(data.blockUntil.seconds * 1000).toLocaleString() : 'N/A';
+            
+            list.innerHTML += `
+                <tr>
+                    <td><b>${data.name}</b><br><small>${data.email}</small></td>
+                    <td><span style="color:${data.role === 'partner' ? 'var(--orange)' : 'var(--green)'}">${data.role.toUpperCase()}</span></td>
+                    <td><b>${data.status}</b></td>
+                    <td><small>Expiry: ${expiry}</small></td>
+                    <td>
+                        <button class="btn btn-block" onclick="blockUser('${id}')">Block</button>
+                        <button class="btn btn-unblock" onclick="unblockUser('${id}')">Unblock</button>
+                        <button class="btn btn-delete" onclick="deleteUser('${id}')">Delete</button>
+                    </td>
+                </tr>
+            `;
+        });
+    }
 
- if(confirm("Delete all data?")){
-   localStorage.removeItem("cscData");
-   location.reload();
- }
+    // Previous Block/Unblock functions as is...
+    async function blockUser(id) {
+        let days = prompt("Kitne dinon ke liye block karna hai?");
+        if (!days) return;
+        let blockDate = new Date();
+        blockDate.setDate(blockDate.getDate() + parseInt(days));
+        await db.collection("Users").doc(id).update({
+            status: 'Blocked',
+            blockUntil: blockDate,
+            blockMessage: `Aapki ID ${days} dinon ke liye block hai.`
+        });
+        loadUsers();
+    }
 
-}
+    async function unblockUser(id) {
+        await db.collection("Users").doc(id).update({ status: 'Active', blockUntil: null });
+        loadUsers();
+    }
 
+    async function deleteUser(id) {
+        if(confirm("Permanently delete?")) {
+            await db.collection("Users").doc(id).delete();
+            loadUsers();
+        }
+    }
+
+    loadUsers();
 </script>
-
 </body>
 </html>
