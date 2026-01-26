@@ -1,39 +1,237 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Dashboard</title>
+  <title>Mumbai Elite | Dashboard</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    body{
+      font-family: Arial;
+      background:#f2f2f2;
+      margin:0;
+    }
+
+    header{
+      background:#0072bc;
+      color:white;
+      padding:15px;
+      text-align:center;
+      font-size:20px;
+    }
+
+    .box{
+      background:white;
+      margin:15px;
+      padding:15px;
+      border-radius:10px;
+    }
+
+    input,button{
+      width:100%;
+      padding:10px;
+      margin:5px 0;
+    }
+
+    button{
+      background:#0072bc;
+      color:white;
+      border:none;
+      border-radius:8px;
+      font-weight:bold;
+    }
+
+    .post{
+      border:1px solid #ddd;
+      padding:10px;
+      margin:10px 0;
+      border-radius:8px;
+    }
+
+    .post img{
+      width:100%;
+      border-radius:8px;
+    }
+
+    .logout{
+      background:red;
+    }
+  </style>
 </head>
 
-<body style="font-family:Arial; text-align:center; padding:40px;">
+<body>
 
-<h1>Welcome to Dashboard 🎉</h1>
-<p>Login Successful ✅</p>
+<header>
+  Mumbai Elite 📸
+</header>
 
-<button onclick="logout()" 
-style="padding:10px 20px;background:#0072bc;color:white;border:none;border-radius:8px;">
-Logout
-</button>
+<!-- Profile -->
+<div class="box">
+  <h3 id="username">Loading...</h3>
+</div>
 
+<!-- Create Post -->
+<div class="box">
+
+  <h3>Create Post</h3>
+
+  <input type="file" id="postImage">
+
+  <input type="text" id="caption" placeholder="Write caption...">
+
+  <button onclick="uploadPost()">Post</button>
+
+</div>
+
+<!-- Feed -->
+<div class="box">
+
+  <h3>Feed</h3>
+
+  <div id="feed"></div>
+
+</div>
+
+<!-- Logout -->
+<div class="box">
+
+  <button class="logout" onclick="logout()">Logout</button>
+
+</div>
+
+
+<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-storage-compat.js"></script>
 
 <script>
+
 const firebaseConfig = {
   apiKey: "AIzaSyA8O4kOinBczBQ8r9mbtOdH98X70ezpgYk",
   authDomain: "new-prototype-s7zo4.firebaseapp.com",
-  projectId: "new-prototype-s7zo4"
+  projectId: "new-prototype-s7zo4",
+  storageBucket: "new-prototype-s7zo4.appspot.com"
 };
 
 firebase.initializeApp(firebaseConfig);
 
 const auth = firebase.auth();
+const db = firebase.firestore();
+const storage = firebase.storage();
 
-function logout(){
-  auth.signOut().then(()=>{
-    window.location.href = "index.html"; // main page
-  });
+
+// Check Login
+auth.onAuthStateChanged(user=>{
+
+  if(!user){
+    window.location="index.html";
+    return;
+  }
+
+  loadProfile(user.uid);
+  loadPosts();
+
+});
+
+
+// Load Profile
+async function loadProfile(uid){
+
+  const doc = await db.collection("Users").doc(uid).get();
+
+  if(doc.exists){
+    document.getElementById("username").innerText =
+      "👤 " + doc.data().name;
+  }
+
 }
+
+
+// Upload Post
+async function uploadPost(){
+
+  const file = document.getElementById("postImage").files[0];
+  const caption = document.getElementById("caption").value;
+
+  if(!file){
+    alert("Photo select karo");
+    return;
+  }
+
+  const user = auth.currentUser;
+
+  const ref = storage.ref("posts/"+Date.now()+file.name);
+
+  await ref.put(file);
+
+  const url = await ref.getDownloadURL();
+
+  await db.collection("Posts").add({
+
+    userId: user.uid,
+    image: url,
+    caption: caption,
+    time: firebase.firestore.FieldValue.serverTimestamp()
+
+  });
+
+  alert("Post Uploaded ✅");
+
+  document.getElementById("caption").value="";
+  document.getElementById("postImage").value="";
+
+  loadPosts();
+
+}
+
+
+// Load Feed
+async function loadPosts(){
+
+  const feed = document.getElementById("feed");
+
+  feed.innerHTML="Loading...";
+
+  const snap = await db
+    .collection("Posts")
+    .orderBy("time","desc")
+    .get();
+
+  feed.innerHTML="";
+
+  snap.forEach(doc=>{
+
+    const p = doc.data();
+
+    feed.innerHTML += `
+
+      <div class="post">
+
+        <img src="${p.image}">
+
+        <p>${p.caption || ""}</p>
+
+      </div>
+
+    `;
+
+  });
+
+}
+
+
+// Logout
+function logout(){
+
+  auth.signOut().then(()=>{
+
+    window.location="index.html";
+
+  });
+
+}
+
 </script>
 
 </body>
