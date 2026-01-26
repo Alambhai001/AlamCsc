@@ -3,6 +3,11 @@
 <head>
   <title>Login - Alam CSC</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+
   <style>
     body{
       font-family: Arial;
@@ -55,11 +60,11 @@
 
   <h2>Login</h2>
 
-  <input type="text" id="user" placeholder="Username">
+  <input type="email" id="loginEmail" placeholder="Email">
 
-  <input type="password" id="pass" placeholder="Password">
+  <input type="password" id="loginPass" placeholder="Password">
 
-  <button onclick="login()">Login</button>
+  <button onclick="handleLogin()">Login</button>
 
   <p id="msg"></p>
 
@@ -67,33 +72,31 @@
 
 </div>
 
-
 <script>
-function login(){
+const firebaseConfig = {
+  apiKey: "AIzaSyA8O4kOinBczBQ8r9mbtOdH98X70ezpgYk",
+  authDomain: "new-prototype-s7zo4.firebaseapp.com",
+  projectId: "new-prototype-s7zo4"
+};
 
-  let u = document.getElementById("user").value.trim();
-  let p = document.getElementById("pass").value.trim();
+firebase.initializeApp(firebaseConfig);
 
-  let data = localStorage.getItem("userData");
+const auth = firebase.auth();
+const db = firebase.firestore();
 
-  if(!data){
-    document.getElementById("msg").innerHTML = "Please Register First";
-    return;
-  }
+async function handleLogin() {
 
-  let user = JSON.parse(data);
+  const email = document.getElementById('loginEmail').value;
+  const pass = document.getElementById('loginPass').value;
 
-  if(u === user.username && p === user.password){
+  try {
 
-    alert("Login Successful!");
-    window.location.href = "index.html";
+    const userCred = await auth.signInWithEmailAndPassword(email, pass);
 
-  }else{
+    const doc = await db.collection("Users")
+                       .doc(userCred.user.uid)
+                       .get();
 
-    document.getElementById("msg").innerHTML = "Wrong Username or Password";
-  }
-}
-</script>
+    const data = doc.data();
 
-</body>
-</html>
+    if(data.status ===
