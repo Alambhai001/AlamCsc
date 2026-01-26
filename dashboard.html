@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+
+<body style="font-family:Arial; text-align:center; padding:40px;">
+
+<h1>Welcome to Dashboard 🎉</h1>
+<p>Login Successful ✅</p>
+
+<button onclick="logout()" 
+style="padding:10px 20px;background:#0072bc;color:white;border:none;border-radius:8px;">
+Logout
+</button>
+
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyA8O4kOinBczBQ8r9mbtOdH98X70ezpgYk",
+  authDomain: "new-prototype-s7zo4.firebaseapp.com",
+  projectId: "new-prototype-s7zo4"
+};
+
+firebase.initializeApp(firebaseConfig);
+
+const auth = firebase.auth();
+
+function logout(){
+  auth.signOut().then(()=>{
+    window.location.href = "index.html"; // main page
+  });
+}
+</script>
+
+</body>
+</html>
