@@ -3,153 +3,178 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mumbai Elite | Single Window Portal</title>
+    <title>Mumbai Elite | Home</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700;900&display=swap" rel="stylesheet">
     
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-storage-compat.js"></script>
 
     <style>
-        :root { --orange: #f37021; --blue: #0072bc; --magenta: #d81b60; --purple: #6a1b9a; --green: #2e7d32; --bg: #f4f7f6; }
-        body { font-family: 'Roboto', sans-serif; margin: 0; background: var(--bg); color: #333; overflow-x: hidden; }
+        :root { --orange: #f37021; --blue: #0072bc; --magenta: #d81b60; --green: #2e7d32; --dark: #111827; }
+        body { font-family: 'Roboto', sans-serif; margin: 0; background: #f8fafc; color: #333; }
+
+        .mumbai-hero {
+            background: linear-gradient(rgba(0,74,128,0.8), rgba(0,0,0,0.85)), url('https://images.unsplash.com/photo-1570160897040-30430ade2211?w=1200');
+            background-size: cover; background-position: center; padding: 60px 5%; text-align: center; color: white;
+        }
+
+        header { background: white; padding: 15px 5%; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 1000; }
+        .logo h1 { font-size: 24px; color: var(--blue); margin: 0; font-weight: 900; }
+
+        .auth-container { padding: 30px 10%; text-align: center; }
+        .main-btn { width: 100%; padding: 15px; margin: 10px 0; border: none; border-radius: 12px; font-weight: bold; font-size: 16px; cursor: pointer; color: white; transition: 0.3s; }
         
-        /* Navigation logic */
-        .page { display: none; min-height: 100vh; animation: fadeIn 0.4s ease; }
+        .reg-card { background: white; padding: 25px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); margin: 20px 0; text-align: left; }
+        input, select { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
+        
+        /* Success Message Overlay */
+        #successOverlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 5000; justify-content: center; align-items: center; flex-direction: column; color: white; }
+        .success-icon { font-size: 60px; color: var(--green); margin-bottom: 20px; animation: scaleUp 0.5s ease; }
+        
+        @keyframes scaleUp { from { transform: scale(0); } to { transform: scale(1); } }
+
+        .page { display: none; min-height: 100vh; }
         .active-page { display: block; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-        header { background: white; padding: 12px 5%; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 1000; }
-        .logo h1 { font-size: 22px; color: var(--blue); margin: 0; text-transform: uppercase; font-weight: 900; }
-        .login-btn { background: var(--orange); color: white; padding: 7px 20px; border-radius: 20px; text-decoration: none; font-weight: bold; font-size: 14px; border:none; cursor:pointer; }
-
-        .hero { background: linear-gradient(135deg, #004a80, #0072bc); color: white; padding: 40px 5%; display: flex; justify-content: space-between; align-items: center; }
-        .hero h2 { font-size: 28px; margin: 0; }
-        
-        .action-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; padding: 25px 5%; }
-        .action-item { color: white; padding: 20px 10px; border-radius: 8px; font-size: 12px; font-weight: bold; text-align: center; cursor: pointer; display: flex; flex-direction: column; gap: 8px; align-items: center; transition: 0.3s; }
-        .bg-magenta { background: var(--magenta); }
-        .bg-orange { background: var(--orange); }
-        .bg-purple { background: var(--purple); }
-        .bg-green { background: var(--green); }
-
-        .form-container { background: white; padding: 30px; margin: 20px 5%; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); text-align: center; }
-        input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
-        .submit-btn { width: 100%; padding: 14px; background: var(--orange); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
-        .back-btn { background: none; border: none; color: var(--blue); cursor: pointer; font-weight: bold; margin-bottom: 20px; }
     </style>
 </head>
-<body>
+<body id="mainBody">
+
+<div id="successOverlay">
+    <i class="fa-solid fa-circle-check success-icon"></i>
+    <h2 style="margin:0;">Registration Successful!</h2>
+    <p>Redirecting to Login...</p>
+</div>
 
 <div id="homePage" class="page active-page">
-    <header>
-        <div class="logo"><h1>Mumbai Elite</h1></div>
-        <button class="login-btn" onclick="navigateTo('loginPage')">LOGIN</button>
-    </header>
-    <div class="hero">
-        <div><h2>Elite Portal</h2><p>Unified Platform for Social Networking</p></div>
-        <img src="https://images.unsplash.com/photo-1566552881560-0be862a7c445?w=100" style="border-radius: 50%; border: 3px solid white;">
+    <header><div class="logo"><h1>MUMBAI ELITE</h1></div></header>
+    <div class="mumbai-hero">
+        <h2>Premium Mumbai Portal</h2>
+        <p>Verified Connections & Secure Networking</p>
     </div>
-    <div class="action-grid">
-        <div class="action-item bg-magenta" onclick="navigateTo('statusPage')"><i class="fa-solid fa-magnifying-glass-chart fa-2x"></i> STATUS</div>
-        <div class="action-item bg-orange" onclick="navigateTo('registerPage', 'partner')"><i class="fa-solid fa-crown fa-2x"></i> PARTNER SIGNUP</div>
-        <div class="action-item bg-purple" onclick="navigateTo('loginPage')"><i class="fa-solid fa-id-card fa-2x"></i> DASHBOARD</div>
-        <div class="action-item bg-green" onclick="navigateTo('registerPage', 'citizen')"><i class="fa-solid fa-user-plus fa-2x"></i> CITIZEN SIGNUP</div>
+    <div class="auth-container">
+        <button class="main-btn" style="background:var(--blue);" onclick="navigateTo('loginPage')">LOGIN NOW</button>
+        <button class="main-btn" style="background:var(--orange);" onclick="navigateTo('registerPage')">CREATE ACCOUNT</button>
+        <button class="main-btn" style="background:var(--green);" onclick="navigateTo('statusPage')">CHECK STATUS</button>
     </div>
 </div>
 
 <div id="registerPage" class="page">
-    <div class="form-container">
-        <button class="back-btn" onclick="navigateTo('homePage')"><i class="fa-solid fa-arrow-left"></i> Home</button>
-        <h3 id="regTitle" style="color:var(--blue)">Create Account</h3>
-        <input type="text" id="regName" placeholder="Full Name">
-        <input type="tel" id="regPhone" placeholder="Mobile Number">
-        <input type="email" id="regEmail" placeholder="Email Address">
-        <input type="password" id="regPass" placeholder="Password">
-        <button class="submit-btn" onclick="handleAuth('signup')">CREATE ACCOUNT</button>
+    <div class="auth-container">
+        <div class="reg-card">
+            <h3 style="color:var(--blue); margin-top:0;">Join the Elite</h3>
+            
+            <label style="font-size:12px; font-weight:bold; color:var(--gray);">ACCOUNT TYPE:</label>
+            <select id="regRole" style="border:2px solid var(--blue);">
+                <option value="citizen">Normal (Aam Aadmi)</option>
+                <option value="partner">Rent (Rental Partner)</option>
+            </select>
+
+            <input type="text" id="regName" placeholder="Full Name">
+            <input type="number" id="regAge" placeholder="Your Age">
+            <input type="tel" id="regPhone" placeholder="Mobile Number">
+            <input type="email" id="regEmail" placeholder="Email ID">
+            <input type="text" id="regHeight" placeholder="Height (e.g. 5'7)">
+            
+            <select id="regGender">
+                <option value="">Select Gender</option>
+                <option value="Male">Boy</option>
+                <option value="Female">Girl</option>
+            </select>
+            
+            <input type="password" id="regPass" placeholder="Set Password">
+            <button class="main-btn" style="background:var(--orange);" onclick="handleSignup()">SIGN UP NOW</button>
+        </div>
+        <p onclick="navigateTo('homePage')" style="cursor:pointer; color:var(--gray);">← Back to Home</p>
     </div>
 </div>
 
 <div id="loginPage" class="page">
-    <div class="form-container">
-        <button class="back-btn" onclick="navigateTo('homePage')"><i class="fa-solid fa-arrow-left"></i> Home</button>
-        <h3 style="color:var(--blue)">User Login</h3>
-        <input type="email" id="loginEmail" placeholder="Email Address">
-        <input type="password" id="loginPass" placeholder="Password">
-        <button class="submit-btn" style="background:var(--blue)" onclick="handleAuth('login')">LOGIN NOW</button>
+    <div class="auth-container">
+        <div class="reg-card">
+            <h3 style="color:var(--blue); margin-top:0;">Login to Your Account</h3>
+            <input type="email" id="loginEmail" placeholder="Email Address">
+            <input type="password" id="loginPass" placeholder="Password">
+            <button class="main-btn" style="background:var(--blue);" onclick="handleLogin()">ENTER PORTAL</button>
+        </div>
+        <p onclick="navigateTo('homePage')" style="cursor:pointer; color:var(--gray);">← Back to Home</p>
     </div>
 </div>
-
-<div id="statusPage" class="page">
-    <div class="form-container">
-        <button class="back-btn" onclick="navigateTo('homePage')"><i class="fa-solid fa-arrow-left"></i> Home</button>
-        <h3 style="color:var(--magenta)">Check Status</h3>
-        <input type="tel" id="trackNo" placeholder="Registered Mobile Number">
-        <button class="submit-btn" style="background:var(--magenta)" onclick="alert('Searching...')">SEARCH</button>
-    </div>
-</div>
-
-<footer><p>© 2026 Mumbai Elite | Secure Gateway</p></footer>
 
 <script>
-    // --- 1. FIREBASE CONFIGURATION (SET WITH YOUR REAL SDK) ---
-    const firebaseConfig = {
+    const firebaseConfig = { 
         apiKey: "AIzaSyA8O4kOinBczBQ8r9mbtOdH98X70ezpgYk",
         authDomain: "new-prototype-s7zo4.firebaseapp.com",
         projectId: "new-prototype-s7zo4",
         storageBucket: "new-prototype-s7zo4.firebasestorage.app",
         messagingSenderId: "406938721232",
-        appId: "1:406938721232:web:abfd93d796d2d37c5af7d5",
-        measurementId: "G-75EJ0PT6YN"
+        appId: "1:406938721232:web:abfd93d796d2d37c5af7d5"
     };
-
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     const db = firebase.firestore();
 
-    let currentRole = 'citizen';
-
-    function navigateTo(pageId, role = 'citizen') {
+    function navigateTo(id) {
         document.querySelectorAll('.page').forEach(p => p.classList.remove('active-page'));
-        document.getElementById(pageId).classList.add('active-page');
-        if(pageId === 'registerPage') {
-            currentRole = role;
-            document.getElementById('regTitle').innerText = (role === 'partner') ? "Partner Registration" : "Citizen Registration";
-        }
+        document.getElementById(id).classList.add('active-page');
+        window.scrollTo(0,0);
     }
 
-    async function handleAuth(type) {
-        if(type === 'signup') {
-            const name = document.getElementById('regName').value;
-            const email = document.getElementById('regEmail').value;
-            const pass = document.getElementById('regPass').value;
-            const phone = document.getElementById('regPhone').value;
+    // --- SMART SIGNUP WITH AUTO-REDIRECT ---
+    async function handleSignup() {
+        const name = document.getElementById('regName').value;
+        const age = document.getElementById('regAge').value;
+        const phone = document.getElementById('regPhone').value;
+        const email = document.getElementById('regEmail').value;
+        const height = document.getElementById('regHeight').value;
+        const gender = document.getElementById('regGender').value;
+        const pass = document.getElementById('regPass').value;
+        const role = document.getElementById('regRole').value; // Rent ya Normal
 
-            if(!email || !pass || !name) return alert("Please fill all details.");
-
-            try {
-                const userCredential = await auth.createUserWithEmailAndPassword(email, pass);
-                const uid = userCredential.user.uid;
-
-                await db.collection("Users").doc(uid).set({
-                    name, email, phone, role: currentRole,
-                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
-                });
-
-                alert("Success! Account Created.");
-                navigateTo('homePage');
-            } catch (e) { alert("Firebase Error: " + e.message); }
-        } else {
-            const email = document.getElementById('loginEmail').value;
-            const pass = document.getElementById('loginPass').value;
-            auth.signInWithEmailAndPassword(email, pass)
-                .then(() => alert("Logged In!"))
-                .catch(e => alert(e.message));
+        if(!email || !pass || !name || !phone || !gender) {
+            return alert("Puri details bhariye!");
         }
+
+        try {
+            const userCredential = await auth.createUserWithEmailAndPassword(email, pass);
+            const uid = userCredential.user.uid;
+
+            await db.collection("Users").doc(uid).set({
+                name, age, phone, email, height, gender,
+                role: role,
+                status: 'Active',
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            });
+
+            // Success Animation & Redirect
+            document.getElementById('successOverlay').style.display = 'flex';
+            
+            setTimeout(() => {
+                document.getElementById('successOverlay').style.display = 'none';
+                navigateTo('loginPage');
+            }, 2500); // 2.5 second baad login page par
+
+        } catch(e) { alert("Registration Error: " + e.message); }
+    }
+
+    async function handleLogin() {
+        const email = document.getElementById('loginEmail').value;
+        const pass = document.getElementById('loginPass').value;
+        try {
+            const userCred = await auth.signInWithEmailAndPassword(email, pass);
+            const doc = await db.collection("Users").doc(userCred.user.uid).get();
+            const data = doc.data();
+
+            if(data.status === 'Blocked') {
+                alert("Account Blocked: " + data.blockMessage);
+                auth.signOut();
+                return;
+            }
+            alert("Welcome back, " + data.name + "!");
+            // Yahan se dashboard khulega
+        } catch(e) { alert("Login Error: " + e.message); }
     }
 </script>
-
 </body>
 </html>
