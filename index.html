@@ -1,46 +1,3 @@
-<!<!DOCTYPE html>
-<html lang="hi">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Alam CSC Center</title>
-
-  
-</head>
-
-<body>
-
-<header>
-  Alam CSC Center  
-  <br>
-  <a href="login.html" style="color:white; font-size:16px;">Admin Login</a>
-</header>
-<style>
-body{
-  font-family: "Poppins", Arial, sans-serif;
-  margin:0;
-  background: linear-gradient(to right,#f8f9fa,#eef2f3);
-  text-align:center;
-}
-
-/* Header */
-header{
-  background: linear-gradient(90deg,#0f5132,#198754);
-  color:white;
-  padding:18px;
-  font-size:24px;
-  letter-spacing:1px;
-  box-shadow:0 3px 10px rgba(0,0,0,0.2);
-}
-
-header a{
-  color:#ffe082;
-  text-decoration:none;
-  font-size:15px;
-}
-
-/* Sections */
-section{
 <!DOCTYPE html>
 <html lang="hi">
 <head>
@@ -53,26 +10,19 @@ section{
 
 <style>
 
-/* Root */
-:root{
-  --main:#198754;
-  --darkbg:#121212;
-  --darkcard:#1e1e1e;
-  --text:#222;
-  --white:#fff;
-}
-
 /* Body */
 body{
   margin:0;
-  font-family:Poppins,Arial;
+  font-family:Poppins,Arial,sans-serif;
   background:#f4f6f9;
-  color:var(--text);
-  transition:0.4s;
+  text-align:center;
+  color:#222;
+  transition:0.3s;
 }
 
+/* Dark Mode */
 body.dark{
-  background:var(--darkbg);
+  background:#121212;
   color:#eee;
 }
 
@@ -80,33 +30,251 @@ body.dark{
 header{
   background:linear-gradient(90deg,#0f5132,#198754);
   color:white;
-  padding:15px;
-  text-align:center;
+  padding:18px;
+  font-size:24px;
+  box-shadow:0 3px 10px rgba(0,0,0,0.2);
   position:relative;
-}
-
-.dark header{
-  background:#000;
 }
 
 /* Dark Button */
 #darkBtn{
   position:absolute;
-  top:15px;
   right:15px;
-  background:#fff;
-  color:#000;
+  top:15px;
   border:none;
+  background:white;
   padding:6px 12px;
   border-radius:20px;
   cursor:pointer;
-  font-size:13px;
 }
 
 /* Banner */
 .banner{
-  height:200px;
-  display:flex;
+  background:linear-gradient(-45deg,#198754,#0f5132,#25d366,#128c7e);
+  background-size:400% 400%;
+  animation:gradient 8s ease infinite;
+  color:white;
+  padding:40px 10px;
+  font-size:22px;
+  font-weight:bold;
+}
+
+@keyframes gradient{
+  0%{background-position:0% 50%}
+  50%{background-position:100% 50%}
+  100%{background-position:0% 50%}
+}
+
+/* Slider */
+.slider{
+  width:95%;
+  max-width:700px;
+  margin:20px auto;
+  border-radius:15px;
+  overflow:hidden;
+  box-shadow:0 5px 20px rgba(0,0,0,0.3);
+}
+
+.slider img{
+  width:100%;
+  display:none;
+}
+
+.slider img.active{
+  display:block;
+}
+
+/* Services */
+.services{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(120px,1fr));
+  gap:15px;
+  padding:20px;
+}
+
+.service{
+  background:white;
+  padding:15px;
+  border-radius:12px;
+  box-shadow:0 3px 10px rgba(0,0,0,0.2);
+  transition:0.3s;
+}
+
+body.dark .service{
+  background:#1e1e1e;
+}
+
+.service:hover{
+  transform:translateY(-5px);
+}
+
+.service i{
+  font-size:28px;
+  color:#198754;
+}
+
+/* Form */
+form{
+  background:white;
+  max-width:400px;
+  margin:20px auto;
+  padding:25px;
+  border-radius:15px;
+  box-shadow:0 5px 15px rgba(0,0,0,0.3);
+}
+
+body.dark form{
+  background:#1e1e1e;
+}
+
+input,select,button{
+  width:100%;
+  padding:12px;
+  margin:7px 0;
+  border-radius:8px;
+  border:1px solid #ccc;
+}
+
+button{
+  background:#198754;
+  color:white;
+  border:none;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+/* Footer */
+footer{
+  background:#0f5132;
+  color:white;
+  padding:12px;
+  margin-top:20px;
+}
+
+body.dark footer{
+  background:#000;
+}
+
+</style>
+</head>
+
+<body>
+
+<header>
+Alam CSC Center<br>
+Digital Seva Portal
+
+<button id="darkBtn">🌙 Dark</button>
+</header>
+
+<!-- Banner -->
+<div class="banner">
+Sabhi Sarkari Seva Ghar Baithe Online
+</div>
+
+<!-- Slider -->
+<div class="slider">
+  <img src="https://source.unsplash.com/800x400/?office" class="active">
+  <img src="https://source.unsplash.com/800x400/?computer">
+  <img src="https://source.unsplash.com/800x400/?india,government">
+</div>
+
+<!-- Services -->
+<h2>Hamari Services</h2>
+
+<div class="services">
+
+<div class="service"><i class="fa-solid fa-id-card"></i><br>Aadhaar</div>
+<div class="service"><i class="fa-solid fa-address-card"></i><br>PAN</div>
+<div class="service"><i class="fa-solid fa-heart-pulse"></i><br>Ayushman</div>
+<div class="service"><i class="fa-solid fa-basket-shopping"></i><br>Ration</div>
+<div class="service"><i class="fa-solid fa-car"></i><br>License</div>
+<div class="service"><i class="fa-solid fa-graduation-cap"></i><br>Scholarship</div>
+
+</div>
+
+<!-- Apply Form -->
+<h2>Online Apply</h2>
+
+<form id="applyForm">
+
+<input type="text" id="name" placeholder="Naam" required>
+
+<input type="tel" id="mobile" maxlength="10" placeholder="Mobile Number" required>
+
+<select id="service" required>
+<option value="">Service Chune</option>
+<option>Aadhaar</option>
+<option>PAN</option>
+<option>Ayushman</option>
+<option>Ration</option>
+<option>License</option>
+</select>
+
+<button type="submit">Submit</button>
+
+</form>
+
+<!-- Contact -->
+<p>📞 9918755840</p>
+<p>📍 Aapka Address</p>
+
+<footer>
+© 2026 Alam CSC Center
+</footer>
+
+<script>
+
+/* Dark Mode */
+document.getElementById("darkBtn").onclick=function(){
+  document.body.classList.toggle("dark");
+};
+
+/* Slider */
+let slides=document.querySelectorAll(".slider img");
+let i=0;
+
+setInterval(()=>{
+  slides[i].classList.remove("active");
+  i=(i+1)%slides.length;
+  slides[i].classList.add("active");
+},3000);
+
+/* WhatsApp Auto Send */
+document.getElementById("applyForm").addEventListener("submit",function(e){
+
+  e.preventDefault();
+
+  let name=document.getElementById("name").value;
+  let mobile=document.getElementById("mobile").value;
+  let service=document.getElementById("service").value;
+
+  if(service===""){
+    alert("Service chune!");
+    return;
+  }
+
+  let msg=
+`New CSC Application
+
+Name: ${name}
+Mobile: ${mobile}
+Service: ${service}
+Date: ${new Date().toLocaleString()}`;
+
+  let wa="919918755840";
+
+  window.open("https://wa.me/"+wa+"?text="+encodeURIComponent(msg));
+
+  alert("Form Submit Ho Gaya ✅ WhatsApp Open Ho Gaya");
+
+  this.reset();
+});
+
+</script>
+
+</body>
+</html>  display:flex;
   align-items:center;
   justify-content:center;
   color:white;
