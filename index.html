@@ -1,333 +1,154 @@
 <!DOCTYPE html>
-<html lang="hi">
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mumbai Elite | Single Window Portal</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+    
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-storage-compat.js"></script>
 
-<title>Alam CSC Center</title>
+    <style>
+        :root { --orange: #f37021; --blue: #0072bc; --magenta: #d81b60; --purple: #6a1b9a; --green: #2e7d32; --bg: #f4f7f6; }
+        body { font-family: 'Roboto', sans-serif; margin: 0; background: var(--bg); color: #333; overflow-x: hidden; }
+        
+        /* Navigation logic */
+        .page { display: none; min-height: 100vh; animation: fadeIn 0.4s ease; }
+        .active-page { display: block; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+        header { background: white; padding: 12px 5%; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 1000; }
+        .logo h1 { font-size: 22px; color: var(--blue); margin: 0; text-transform: uppercase; font-weight: 900; }
+        .login-btn { background: var(--orange); color: white; padding: 7px 20px; border-radius: 20px; text-decoration: none; font-weight: bold; font-size: 14px; border:none; cursor:pointer; }
 
-<style>
+        .hero { background: linear-gradient(135deg, #004a80, #0072bc); color: white; padding: 40px 5%; display: flex; justify-content: space-between; align-items: center; }
+        .hero h2 { font-size: 28px; margin: 0; }
+        
+        .action-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; padding: 25px 5%; }
+        .action-item { color: white; padding: 20px 10px; border-radius: 8px; font-size: 12px; font-weight: bold; text-align: center; cursor: pointer; display: flex; flex-direction: column; gap: 8px; align-items: center; transition: 0.3s; }
+        .bg-magenta { background: var(--magenta); }
+        .bg-orange { background: var(--orange); }
+        .bg-purple { background: var(--purple); }
+        .bg-green { background: var(--green); }
 
-body{
-  margin:0;
-  font-family:Poppins,Arial,sans-serif;
-  background:#f4f6f9;
-  text-align:center;
-}
-
-/* Header */
-header{
-  background:linear-gradient(90deg,#0f5132,#198754);
-  color:white;
-  padding:20px;
-  font-size:24px;
-}
-
-/* Banner */
-.banner{
-  background:linear-gradient(45deg,#198754,#25d366);
-  color:white;
-  padding:25px;
-  font-weight:bold;
-}
-
-/* Services */
-.services{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(130px,1fr));
-  gap:15px;
-  padding:20px;
-}
-
-.service{
-  background:white;
-  padding:18px;
-  border-radius:15px;
-  box-shadow:0 3px 10px rgba(0,0,0,0.2);
-  cursor:pointer;
-  transition:0.3s;
-}
-
-.service:hover{
-  transform:scale(1.05);
-  background:#e8fff2;
-}
-
-.service i{
-  font-size:28px;
-  margin-bottom:6px;
-  color:#198754;
-}
-
-/* Form */
-#applyBox{
-  display:none;
-  background:white;
-  max-width:400px;
-  margin:20px auto;
-  padding:25px;
-  border-radius:15px;
-  box-shadow:0 4px 15px rgba(0,0,0,0.3);
-}
-
-input,textarea,button{
-  width:100%;
-  padding:12px;
-  margin:8px 0;
-  border-radius:6px;
-  border:1px solid #ccc;
-}
-
-button{
-  background:#198754;
-  color:white;
-  border:none;
-  font-weight:bold;
-  border-radius:50px;
-}
-
-.back{
-  background:none;
-  color:#198754;
-  border:none;
-}
-
-/* Footer */
-footer{
-  background:#0f5132;
-  color:white;
-  padding:15px;
-  margin-top:40px;
-}
-
-</style>
+        .form-container { background: white; padding: 30px; margin: 20px 5%; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); text-align: center; }
+        input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
+        .submit-btn { width: 100%; padding: 14px; background: var(--orange); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        .back-btn { background: none; border: none; color: var(--blue); cursor: pointer; font-weight: bold; margin-bottom: 20px; }
+    </style>
 </head>
-
 <body>
 
-<header>
-Alam CSC Center<br>
-Digital Seva Portal
-</header>
-
-<div class="banner">
-Sabhi Sarkari Seva Ghar Baithe Online
+<div id="homePage" class="page active-page">
+    <header>
+        <div class="logo"><h1>Mumbai Elite</h1></div>
+        <button class="login-btn" onclick="navigateTo('loginPage')">LOGIN</button>
+    </header>
+    <div class="hero">
+        <div><h2>Elite Portal</h2><p>Unified Platform for Social Networking</p></div>
+        <img src="https://images.unsplash.com/photo-1566552881560-0be862a7c445?w=100" style="border-radius: 50%; border: 3px solid white;">
+    </div>
+    <div class="action-grid">
+        <div class="action-item bg-magenta" onclick="navigateTo('statusPage')"><i class="fa-solid fa-magnifying-glass-chart fa-2x"></i> STATUS</div>
+        <div class="action-item bg-orange" onclick="navigateTo('registerPage', 'partner')"><i class="fa-solid fa-crown fa-2x"></i> PARTNER SIGNUP</div>
+        <div class="action-item bg-purple" onclick="navigateTo('loginPage')"><i class="fa-solid fa-id-card fa-2x"></i> DASHBOARD</div>
+        <div class="action-item bg-green" onclick="navigateTo('registerPage', 'citizen')"><i class="fa-solid fa-user-plus fa-2x"></i> CITIZEN SIGNUP</div>
+    </div>
 </div>
 
-<h2>Hamari Services</h2>
-
-<!-- SERVICES -->
-<div class="services" id="serviceBox">
-
-<div class="service" onclick="openForm('Aadhaar')">
-<i class="fa-solid fa-id-card"></i><br>Aadhaar
+<div id="registerPage" class="page">
+    <div class="form-container">
+        <button class="back-btn" onclick="navigateTo('homePage')"><i class="fa-solid fa-arrow-left"></i> Home</button>
+        <h3 id="regTitle" style="color:var(--blue)">Create Account</h3>
+        <input type="text" id="regName" placeholder="Full Name">
+        <input type="tel" id="regPhone" placeholder="Mobile Number">
+        <input type="email" id="regEmail" placeholder="Email Address">
+        <input type="password" id="regPass" placeholder="Password">
+        <button class="submit-btn" onclick="handleAuth('signup')">CREATE ACCOUNT</button>
+    </div>
 </div>
 
-<div class="service" onclick="openForm('PAN')">
-<i class="fa-solid fa-address-card"></i><br>PAN
+<div id="loginPage" class="page">
+    <div class="form-container">
+        <button class="back-btn" onclick="navigateTo('homePage')"><i class="fa-solid fa-arrow-left"></i> Home</button>
+        <h3 style="color:var(--blue)">User Login</h3>
+        <input type="email" id="loginEmail" placeholder="Email Address">
+        <input type="password" id="loginPass" placeholder="Password">
+        <button class="submit-btn" style="background:var(--blue)" onclick="handleAuth('login')">LOGIN NOW</button>
+    </div>
 </div>
 
-<div class="service" onclick="openForm('Ayushman')">
-<i class="fa-solid fa-heart-pulse"></i><br>Ayushman
+<div id="statusPage" class="page">
+    <div class="form-container">
+        <button class="back-btn" onclick="navigateTo('homePage')"><i class="fa-solid fa-arrow-left"></i> Home</button>
+        <h3 style="color:var(--magenta)">Check Status</h3>
+        <input type="tel" id="trackNo" placeholder="Registered Mobile Number">
+        <button class="submit-btn" style="background:var(--magenta)" onclick="alert('Searching...')">SEARCH</button>
+    </div>
 </div>
 
-<div class="service" onclick="openForm('Ration')">
-<i class="fa-solid fa-basket-shopping"></i><br>Ration
-</div>
-
-<div class="service" onclick="openForm('License')">
-<i class="fa-solid fa-car"></i><br>License
-</div>
-
-<div class="service" onclick="openForm('Scholarship')">
-<i class="fa-solid fa-graduation-cap"></i><br>Scholarship
-</div>
-
-</div>
-
-<!-- FORM -->
-<div id="applyBox">
-
-<h3 id="serviceTitle"></h3>
-
-<input type="text" id="name" placeholder="Full Name" required>
-
-<input type="tel" id="mobile" maxlength="10" placeholder="Mobile Number" required>
-
-<textarea id="address" placeholder="Full Address"></textarea>
-
-<label>Upload Documents</label>
-<input type="file" id="docs" multiple>
-
-<p style="background:#f1f1f1;padding:8px;border-radius:6px;">
-UPI: <b>9336678937@ybl</b>
-</p>
-
-<input type="checkbox" id="paid"> Payment Done ✔️
-
-<button onclick="sendForm()">Submit on WhatsApp</button>
-
-<button class="back" onclick="goBack()">← Back</button>
-
-</div>
-
-
-<footer>
-© 2026 Alam CSC Center
-</footer>
-
+<footer><p>© 2026 Mumbai Elite | Secure Gateway</p></footer>
 
 <script>
+    // --- 1. FIREBASE CONFIGURATION (SET WITH YOUR REAL SDK) ---
+    const firebaseConfig = {
+        apiKey: "AIzaSyA8O4kOinBczBQ8r9mbtOdH98X70ezpgYk",
+        authDomain: "new-prototype-s7zo4.firebaseapp.com",
+        projectId: "new-prototype-s7zo4",
+        storageBucket: "new-prototype-s7zo4.firebasestorage.app",
+        messagingSenderId: "406938721232",
+        appId: "1:406938721232:web:abfd93d796d2d37c5af7d5",
+        measurementId: "G-75EJ0PT6YN"
+    };
 
-let selectedService="";
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
 
-/* Open Form */
-function openForm(service){
+    let currentRole = 'citizen';
 
-  selectedService=service;
+    function navigateTo(pageId, role = 'citizen') {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active-page'));
+        document.getElementById(pageId).classList.add('active-page');
+        if(pageId === 'registerPage') {
+            currentRole = role;
+            document.getElementById('regTitle').innerText = (role === 'partner') ? "Partner Registration" : "Citizen Registration";
+        }
+    }
 
-  document.getElementById("serviceBox").style.display="none";
-  document.getElementById("applyBox").style.display="block";
+    async function handleAuth(type) {
+        if(type === 'signup') {
+            const name = document.getElementById('regName').value;
+            const email = document.getElementById('regEmail').value;
+            const pass = document.getElementById('regPass').value;
+            const phone = document.getElementById('regPhone').value;
 
-  document.getElementById("serviceTitle").innerText=
-    service+" Application Form";
+            if(!email || !pass || !name) return alert("Please fill all details.");
 
-  window.scrollTo(0,0);
-}
+            try {
+                const userCredential = await auth.createUserWithEmailAndPassword(email, pass);
+                const uid = userCredential.user.uid;
 
-/* Back */
-function goBack(){
-  location.reload();
-}
+                await db.collection("Users").doc(uid).set({
+                    name, email, phone, role: currentRole,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                });
 
-/* Submit */
-function sendForm(){
-
-  let name=document.getElementById("name").value;
-  let mobile=document.getElementById("mobile").value;
-  let address=document.getElementById("address").value;
-  let paid=document.getElementById("paid").checked;
-  let docs=document.getElementById("docs").files.length;
-
-  if(!name || !mobile || !paid){
-    alert("Sab details bharo!");
-    return;
-  }
-
-  let msg=
-`NEW CSC APPLICATION
-
-Service: ${selectedService}
-
-Name: ${name}
-Mobile: ${mobile}
-Address: ${address}
-
-Documents: ${docs} files
-
-Payment: Done`;
-
-  let wa="919918755840";
-
-  window.open(
-    "https://wa.me/"+wa+"?text="+encodeURIComponent(msg)
-  );
-
-}
-
-</script>
-
-</body>
-</html>    <a href="tel:9918755840" style="margin-right:10px; color:#198754;">📞 Call</a>
-    <a href="https://wa.me/919918755840" style="margin-right:10px; color:#25D366;">💬 WhatsApp</a>
-    <a href="mailto:info@example.com" style="color:#0077cc;">✉️ Email</a>
-  </div>
-
-  <h2>Our Services</h2>
-  <ul style="text-align:left; line-height:1.6;">
-    <li>Aadhaar Enrollment</li>
-    <li>PAN Card Services</li>
-    <li>Ration Card Services</li>
-    <li>Driving License Related Services</li>
-    <li>Income Tax Filing & Other Services</li>
-    <li>Scholarship Registration</li>
-    <li>Passport Services</li>
-    <li>Bill Payments & Recharge</li>
-  </ul>
-
-  <h3>Apply Now</h3>
-  <p>Complete your application for desired service by contacting us on WhatsApp or phone number above.</p>
-
-  <h3>Opening Hours</h3>
-  <p>Mon – Sat: 10:00 AM – 6:00 PM</p>
-
-  <h3>FAQ</h3>
-  <p><b>Q:</b> What is a CSC?<br>
-  <b>A:</b> A Common Services Centre is a digital service delivery point under Digital India program providing government and private services to citizens. 10</p>
-
-  <h3>Contact Office</h3>
-  <p>VILL Alidapur total khamhariya, siddharthnagar uttar pradesh 272202– (Similar to CSC India listing). 11</p>
-
-</section>
-<h2>Online Apply</h2>
-
-<form id="applyForm">
-
-<input type="text" id="name" placeholder="Naam" required>
-
-<input type="tel" id="mobile" maxlength="10" placeholder="Mobile Number" required>
-
-<select id="service" required>
-<option value="">Service Chune</option>
-<option>Aadhaar</option>
-<option>PAN</option>
-<option>Ayushman</option>
-<option>Ration</option>
-<option>License</option>
-</select>
-
-<button type="submit">Submit</button>
-
-</form>
-
-<p>📞 9918755840</p>
-<p>📍 Alidapur toal khamhariya</p>
-
-<footer>
-© 2026 Alam CSC Center
-</footer>
-
-<script>
-document.getElementById("applyForm").addEventListener("submit",function(e){
-
-  e.preventDefault();
-
-  let name=document.getElementById("name").value;
-  let mobile=document.getElementById("mobile").value;
-  let service=document.getElementById("service").value;
-
-  if(service===""){
-    alert("Service chune!");
-    return;
-  }
-
-  let msg=
-`New CSC Application
-
-Name: ${name}
-Mobile: ${mobile}
-Service: ${service}`;
-
-  let wa="919918755840";
-
-  window.open("https://wa.me/"+wa+"?text="+encodeURIComponent(msg));
-
-  alert("Form Submit Ho Gaya ✅");
-
-  this.reset();
-});
+                alert("Success! Account Created.");
+                navigateTo('homePage');
+            } catch (e) { alert("Firebase Error: " + e.message); }
+        } else {
+            const email = document.getElementById('loginEmail').value;
+            const pass = document.getElementById('loginPass').value;
+            auth.signInWithEmailAndPassword(email, pass)
+                .then(() => alert("Logged In!"))
+                .catch(e => alert(e.message));
+        }
+    }
 </script>
 
 </body>
