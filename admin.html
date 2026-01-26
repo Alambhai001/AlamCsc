@@ -3,26 +3,76 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Master Control | Mumbai Elite</title>
+    <title>Mumbai Elite | Master Admin Control</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        :root { --blue: #0072bc; --orange: #f37021; --green: #2e7d32; --red: #d32f2f; --purple: #6a1b9a; }
-        body { font-family: sans-serif; margin: 0; background: #f4f7f6; }
-        .admin-header { background: var(--blue); color: white; padding: 15px 5%; display: flex; justify-content: space-between; }
+        :root { --blue: #0072bc; --orange: #f37021; --green: #2e7d32; --red: #d32f2f; }
         
-        /* Quick Add Form */
-        .quick-add { background: white; margin: 20px 5%; padding: 20px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); border-top: 5px solid var(--green); }
-        .form-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-top: 10px; }
-        input, select { padding: 10px; border: 1px solid #ddd; border-radius: 5px; }
-        .btn-add { background: var(--green); color: white; border: none; padding: 10px; border-radius: 5px; font-weight: bold; cursor: pointer; }
+        body { 
+            font-family: 'Roboto', sans-serif; 
+            margin: 0; 
+            background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('https://images.unsplash.com/photo-1570160897040-30430ade2211?w=1600'); 
+            background-size: cover; 
+            background-attachment: fixed;
+            color: #fff;
+        }
 
-        .table-container { margin: 20px 5%; background: white; border-radius: 10px; overflow-x: auto; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        table { width: 100%; border-collapse: collapse; min-width: 800px; }
-        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; font-size: 13px; }
-        .btn { padding: 5px 8px; border-radius: 4px; border: none; cursor: pointer; font-weight: bold; font-size: 11px; margin: 2px; }
+        .admin-header { 
+            background: rgba(255, 255, 255, 0.1); 
+            backdrop-filter: blur(10px); 
+            padding: 20px 5%; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+        }
+
+        /* Stats Cards */
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; padding: 20px 5%; }
+        .stat-card { 
+            background: rgba(255, 255, 255, 0.95); 
+            padding: 15px; 
+            border-radius: 12px; 
+            text-align: center; 
+            color: #333;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+        }
+        .stat-card b { font-size: 24px; color: var(--blue); display: block; }
+
+        /* Force Add Form */
+        .quick-add { 
+            background: rgba(255, 255, 255, 0.95); 
+            margin: 20px 5%; 
+            padding: 25px; 
+            border-radius: 15px; 
+            color: #333;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.4);
+        }
+        .form-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-top: 15px; }
+        input, select { padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; }
+        .btn-add { background: var(--green); color: white; border: none; padding: 12px; border-radius: 8px; font-weight: 900; cursor: pointer; }
+
+        /* Table Area */
+        .table-container { 
+            margin: 20px 5% 50px; 
+            background: white; 
+            border-radius: 15px; 
+            overflow-x: auto; 
+            color: #333;
+        }
+        table { width: 100%; border-collapse: collapse; min-width: 900px; }
+        th { background: #f8f9fa; padding: 15px; text-align: left; font-weight: 900; font-size: 12px; color: #666; text-transform: uppercase; }
+        td { padding: 15px; border-bottom: 1px solid #eee; }
+        
+        .user-img { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 2px solid var(--blue); }
+        .role-badge { padding: 4px 10px; border-radius: 20px; font-size: 10px; font-weight: bold; }
+        .role-partner { background: #fff3e0; color: var(--orange); }
+        .role-citizen { background: #e8f5e9; color: var(--green); }
+        
+        .btn { padding: 7px 12px; border-radius: 6px; border: none; cursor: pointer; font-weight: bold; font-size: 11px; margin: 2px; }
         .btn-block { background: var(--orange); color: white; }
         .btn-delete { background: var(--red); color: white; }
         .btn-unblock { background: var(--green); color: white; }
@@ -31,22 +81,32 @@
 <body>
 
 <div class="admin-header">
-    <h2><i class="fa-solid fa-user-shield"></i> Master Admin Control</h2>
-    <button onclick="loadUsers()" class="btn" style="background:white; color:var(--blue)">Refresh List</button>
+    <div class="logo">
+        <h1 style="margin:0; font-size: 24px; letter-spacing: 1px;"><i class="fa-solid fa-city"></i> MUMBAI ELITE ADMIN</h1>
+        <small style="opacity:0.8">Master Control & User Management</small>
+    </div>
+    <button onclick="loadUsers()" class="btn" style="background:var(--blue); color:white; padding:10px 20px;">REFRESH DATA</button>
+</div>
+
+<div class="stats-grid">
+    <div class="stat-card"><b id="countAll">0</b><span>Total Active Users</span></div>
+    <div class="stat-card"><b id="countPartner" style="color:var(--orange)">0</b><span>Rental Partners</span></div>
+    <div class="stat-card"><b id="countCitizen" style="color:var(--green)">0</b><span>Aam Aadmi (Clients)</span></div>
 </div>
 
 <div class="quick-add">
-    <h3><i class="fa-solid fa-plus-circle"></i> Force Add New User (FREE)</h3>
+    <h3 style="margin-top:0; color:var(--blue);"><i class="fa-solid fa-plus-circle"></i> Admin Force Add (FREE)</h3>
+    <p style="font-size:12px; color:#666;">Yahan se aap kisi ko bhi FREE mein Rental ya Citizen bana kar add kar sakte hain.</p>
     <div class="form-row">
         <input type="text" id="addName" placeholder="Full Name">
         <input type="email" id="addEmail" placeholder="Email Address">
-        <input type="password" id="addPass" placeholder="Password">
+        <input type="password" id="addPass" placeholder="Set Password">
         <input type="tel" id="addPhone" placeholder="Mobile Number">
         <select id="addRole">
-            <option value="citizen">Aam Aadmi (Citizen)</option>
-            <option value="partner">Rental Partner (Rental)</option>
+            <option value="citizen">Citizen (Aam Aadmi)</option>
+            <option value="partner">Partner (Rental)</option>
         </select>
-        <button class="btn-add" onclick="forceAddUser()">ADD USER NOW</button>
+        <button class="btn-add" onclick="forceAddUser()">ACTIVATE NOW</button>
     </div>
 </div>
 
@@ -54,11 +114,11 @@
     <table>
         <thead>
             <tr>
-                <th>Name & Info</th>
-                <th>Role/Type</th>
+                <th>Profile & Contact</th>
+                <th>Type</th>
                 <th>Status</th>
-                <th>Action Time</th>
-                <th>Master Controls</th>
+                <th>Block Info</th>
+                <th>Master Actions</th>
             </tr>
         </thead>
         <tbody id="userList"></tbody>
@@ -66,6 +126,7 @@
 </div>
 
 <script>
+    // --- FIREBASE CONFIG (SAME AS YOURS) ---
     const firebaseConfig = {
       apiKey: "AIzaSyA8O4kOinBczBQ8r9mbtOdH98X70ezpgYk",
       authDomain: "new-prototype-s7zo4.firebaseapp.com",
@@ -79,7 +140,7 @@
     const auth = firebase.auth();
     const db = firebase.firestore();
 
-    // 1. FORCE ADD FUNCTION (Bina Rent ke Add karna)
+    // Force Add Function
     async function forceAddUser() {
         const name = document.getElementById('addName').value;
         const email = document.getElementById('addEmail').value;
@@ -87,63 +148,68 @@
         const phone = document.getElementById('addPhone').value;
         const role = document.getElementById('addRole').value;
 
-        if(!name || !email || !pass || !phone) return alert("Sari details bhariye!");
+        if(!name || !email || !pass || !phone) return alert("All fields are required!");
 
         try {
-            // Firebase Auth mein user banana
             const userCredential = await auth.createUserWithEmailAndPassword(email, pass);
             const uid = userCredential.user.uid;
 
-            // Database mein "Active" status ke sath save karna (Bina rent mangay)
             await db.collection("Users").doc(uid).set({
                 name, email, phone, role,
-                status: 'Active', // Direct Active
-                timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-                addedBy: 'Admin'
+                status: 'Active',
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
             });
 
-            alert(`${name} ko successfully ${role} banakar FREE add kar diya gaya hai!`);
-            location.reload();
-        } catch (e) { alert("Error: " + e.message); }
+            alert(`${name} has been added as a FREE ${role}!`);
+            loadUsers();
+        } catch (e) { alert(e.message); }
     }
 
     async function loadUsers() {
         const snapshot = await db.collection("Users").get();
         const list = document.getElementById('userList');
+        let p = 0, c = 0;
         list.innerHTML = "";
         
         snapshot.forEach(doc => {
             const data = doc.data();
             const id = doc.id;
-            const expiry = data.blockUntil ? new Date(data.blockUntil.seconds * 1000).toLocaleString() : 'N/A';
-            
+            const expiry = data.blockUntil ? new Date(data.blockUntil.seconds * 1000).toLocaleString() : 'Active';
+            if(data.role === 'partner') p++; else c++;
+
             list.innerHTML += `
                 <tr>
-                    <td><b>${data.name}</b><br><small>${data.email}</small></td>
-                    <td><span style="color:${data.role === 'partner' ? 'var(--orange)' : 'var(--green)'}">${data.role.toUpperCase()}</span></td>
-                    <td><b>${data.status}</b></td>
-                    <td><small>Expiry: ${expiry}</small></td>
                     <td>
-                        <button class="btn btn-block" onclick="blockUser('${id}')">Block</button>
-                        <button class="btn btn-unblock" onclick="unblockUser('${id}')">Unblock</button>
-                        <button class="btn btn-delete" onclick="deleteUser('${id}')">Delete</button>
+                        <div style="display:flex; align-items:center; gap:12px;">
+                            <img src="${data.photoUrl || 'https://via.placeholder.com/150'}" class="user-img">
+                            <div>
+                                <b style="font-size:14px;">${data.name}</b><br>
+                                <small style="color:#666;">${data.phone} | ${data.email}</small>
+                            </div>
+                        </div>
+                    </td>
+                    <td><span class="role-badge role-${data.role}">${data.role.toUpperCase()}</span></td>
+                    <td style="font-weight:bold; color:${data.status === 'Blocked' ? 'var(--red)' : 'var(--green)'}">${data.status}</td>
+                    <td><small>${expiry}</small></td>
+                    <td>
+                        <button class="btn btn-block" onclick="blockUser('${id}')">BLOCK</button>
+                        <button class="btn btn-unblock" onclick="unblockUser('${id}')">UNBLOCK</button>
+                        <button class="btn btn-delete" onclick="deleteUser('${id}')"><i class="fa-solid fa-trash"></i></button>
                     </td>
                 </tr>
             `;
         });
+        document.getElementById('countAll').innerText = (p+c);
+        document.getElementById('countPartner').innerText = p;
+        document.getElementById('countCitizen').innerText = c;
     }
 
-    // Previous Block/Unblock functions as is...
+    // Previous Block, Unblock, Delete functions remain same...
     async function blockUser(id) {
         let days = prompt("Kitne dinon ke liye block karna hai?");
-        if (!days) return;
-        let blockDate = new Date();
-        blockDate.setDate(blockDate.getDate() + parseInt(days));
-        await db.collection("Users").doc(id).update({
-            status: 'Blocked',
-            blockUntil: blockDate,
-            blockMessage: `Aapki ID ${days} dinon ke liye block hai.`
-        });
+        if(!days) return;
+        let date = new Date(); date.setDate(date.getDate() + parseInt(days));
+        await db.collection("Users").doc(id).update({ status: 'Blocked', blockUntil: date });
         loadUsers();
     }
 
@@ -153,10 +219,7 @@
     }
 
     async function deleteUser(id) {
-        if(confirm("Permanently delete?")) {
-            await db.collection("Users").doc(id).delete();
-            loadUsers();
-        }
+        if(confirm("Confirm Delete?")) { await db.collection("Users").doc(id).delete(); loadUsers(); }
     }
 
     loadUsers();
