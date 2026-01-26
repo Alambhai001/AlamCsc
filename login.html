@@ -99,4 +99,22 @@ async function handleLogin() {
 
     const data = doc.data();
 
-    if(data.status ===
+    // Agar user blocked ho
+    if(data && data.status === "Blocked"){
+      document.getElementById("msg").innerHTML = "Account Blocked!";
+      return;
+    }
+
+    // ✅ Direct Dashboard
+    window.location.href = "dashboard.html";
+
+  } catch(e) {
+
+    document.getElementById("msg").innerHTML = e.message;
+
+  }
+}
+</script>
+
+</body>
+</html>
