@@ -3,135 +3,137 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mumbai Elite | Admin Panel</title>
+
+<title>Alam S | Admin Panel</title>
+
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon.png">
 
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
 
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-
 <style>
-:root{--blue:#0072bc;--orange:#f37021;--green:#2e7d32;--red:#d32f2f}
+
+:root{
+--blue:#0072bc;
+--green:#2e7d32;
+--red:#d32f2f;
+--orange:#f37021;
+}
 
 body{
 font-family:Arial;
 margin:0;
 background:#111;
-color:#fff;
+color:white;
 }
 
 /* LOGIN */
+
 #loginBox{
 max-width:350px;
 margin:120px auto;
 background:white;
 color:#333;
 padding:25px;
-border-radius:12px;
+border-radius:10px;
 text-align:center;
 }
 
 #loginBox input{
 width:100%;
 padding:10px;
-margin:8px 0;
-border-radius:6px;
-border:1px solid #ccc;
+margin:7px 0;
 }
 
 /* HEADER */
-.admin-header{
-background:#000;
-padding:15px 5%;
+
+.header{
+background:black;
+padding:15px;
 display:flex;
 justify-content:space-between;
 align-items:center;
 }
 
 /* STATS */
-.stats-grid{
+
+.stats{
 display:grid;
-grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
-gap:12px;
-padding:15px 5%;
+grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+gap:10px;
+padding:15px;
 }
 
-.stat-card{
+.card{
 background:white;
 color:#333;
 padding:15px;
-border-radius:10px;
+border-radius:8px;
 text-align:center;
 }
 
 /* FORM */
-.quick-add{
+
+.form{
 background:white;
 color:#333;
-margin:20px 5%;
-padding:20px;
-border-radius:12px;
+margin:15px;
+padding:15px;
+border-radius:8px;
 }
 
-.form-row{
-display:grid;
-grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
-gap:10px;
+.form input,.form select{
+width:100%;
+padding:8px;
+margin:5px 0;
 }
 
-input,select{
-padding:10px;
-border-radius:6px;
-border:1px solid #ccc;
-}
-
-.btn-add{
+.form button{
 background:var(--green);
 color:white;
 border:none;
-padding:12px;
-border-radius:6px;
-font-weight:bold;
-cursor:pointer;
+padding:10px;
+width:100%;
 }
 
 /* TABLE */
-.table-container{
-margin:20px 5%;
+
+.tableBox{
+margin:15px;
 background:white;
 color:#333;
-border-radius:12px;
+border-radius:8px;
 overflow:auto;
 }
 
 table{
 width:100%;
 border-collapse:collapse;
-min-width:800px;
+min-width:600px;
 }
 
 th,td{
-padding:12px;
+padding:10px;
 border-bottom:1px solid #eee;
-font-size:13px;
+font-size:12px;
 }
 
-th{
-background:#f5f5f5;
-}
+th{background:#f5f5f5}
 
 .btn{
-padding:6px 10px;
-border:none;
-border-radius:5px;
+padding:5px 8px;
 font-size:11px;
+border:none;
+border-radius:4px;
 cursor:pointer;
+color:white;
 }
 
-.btn-block{background:var(--orange);color:white}
-.btn-unblock{background:var(--green);color:white}
-.btn-delete{background:var(--red);color:white}
+.block{background:var(--orange)}
+.unblock{background:var(--green)}
+.del{background:var(--red)}
 
 </style>
 </head>
@@ -143,74 +145,77 @@ cursor:pointer;
 
 <h2>🔐 Admin Login</h2>
 
-<input id="adminEmail" placeholder="Email">
-<input id="adminPass" type="password" placeholder="Password">
+<input id="email" placeholder="Email">
+<input id="pass" type="password" placeholder="Password">
 
-<button onclick="adminLogin()"
-style="width:100%;padding:10px;background:#0072bc;color:white;border:none;border-radius:6px">
+<button onclick="login()" style="width:100%;background:var(--blue);color:white;padding:10px;border:none">
 LOGIN
 </button>
 
-<p id="loginMsg" style="color:red;font-size:13px"></p>
+<p id="msg" style="color:red"></p>
 
 </div>
 
 
-<!-- ADMIN PANEL -->
-<div id="adminPanel" style="display:none">
+<!-- PANEL -->
+<div id="panel" style="display:none">
 
-<div class="admin-header">
-<h2>🏙️ Mumbai Elite Admin</h2>
-<button onclick="logout()" class="btn" style="background:red;color:white">LOGOUT</button>
-</div>
+<div class="header">
 
+<h3>🏙️ Alam S Admin</h3>
 
-<div class="stats-grid">
-
-<div class="stat-card">
-<b id="countAll">0</b><br>Total Users
-</div>
-
-<div class="stat-card">
-<b id="countPartner" style="color:var(--orange)">0</b><br>Partners
-</div>
-
-<div class="stat-card">
-<b id="countCitizen" style="color:var(--green)">0</b><br>Citizens
-</div>
+<button onclick="logout()" class="btn del">Logout</button>
 
 </div>
 
 
-<div class="quick-add">
+<!-- STATS -->
+<div class="stats">
 
-<h3>➕ Add User</h3>
+<div class="card">
+<b id="all">0</b><br>Total
+</div>
 
-<div class="form-row">
+<div class="card">
+<b id="partner">0</b><br>Partner
+</div>
 
-<input id="addName" placeholder="Name">
-<input id="addEmail" placeholder="Email">
-<input id="addPass" type="password" placeholder="Password">
-<input id="addPhone" placeholder="Phone">
+<div class="card">
+<b id="citizen">0</b><br>Citizen
+</div>
 
-<select id="addRole">
+</div>
+
+
+<!-- ADD USER -->
+<div class="form">
+
+<h4>Add User</h4>
+
+<input id="name" placeholder="Name">
+<input id="uemail" placeholder="Email">
+<input id="upass" type="password" placeholder="Password">
+<input id="phone" placeholder="Phone">
+
+<select id="role">
 <option value="citizen">Citizen</option>
 <option value="partner">Partner</option>
 </select>
 
-<button class="btn-add" onclick="forceAddUser()">ADD</button>
+<button onclick="addUser()">Add User</button>
 
 </div>
 
-</div>
 
-
-<div class="table-container">
+<!-- USERS -->
+<div class="tableBox">
 
 <table>
+
 <thead>
 <tr>
 <th>Name</th>
+<th>Phone</th>
 <th>Role</th>
 <th>Status</th>
 <th>Block</th>
@@ -218,7 +223,7 @@ LOGIN
 </tr>
 </thead>
 
-<tbody id="userList"></tbody>
+<tbody id="list"></tbody>
 
 </table>
 
@@ -229,103 +234,148 @@ LOGIN
 
 <script>
 
-/* FIREBASE */
-const firebaseConfig = {
+/* FIREBASE CONFIG */
+
+firebase.initializeApp({
 apiKey: "AIzaSyA8O4kOinBczBQ8r9mbtOdH98X70ezpgYk",
 authDomain: "new-prototype-s7zo4.firebaseapp.com",
-projectId: "new-prototype-s7zo4",
-storageBucket: "new-prototype-s7zo4.firebasestorage.app",
-messagingSenderId: "406938721232",
-appId: "1:406938721232:web:abfd93d796d2d37c5af7d5"
-};
+projectId: "new-prototype-s7zo4"
+});
 
-firebase.initializeApp(firebaseConfig);
+const auth=firebase.auth();
+const db=firebase.firestore();
 
-const auth = firebase.auth();
-const db = firebase.firestore();
+let adminEmail="";
+let adminPass="";
+
+
+/* AUTO LOGIN */
+
+auth.onAuthStateChanged(async user=>{
+
+if(user){
+
+let doc=await db.collection("Users").doc(user.uid).get();
+
+if(doc.exists && doc.data().role==="admin"){
+
+loginBox.style.display="none";
+panel.style.display="block";
+loadUsers();
+
+}else{
+
+auth.signOut();
+
+}
+
+}
+
+});
 
 
 /* LOGIN */
-function adminLogin(){
 
-let email=adminEmail.value;
-let pass=adminPass.value;
+async function login(){
 
-auth.signInWithEmailAndPassword(email,pass)
-.then(()=>{
+adminEmail=email.value.trim();
+adminPass=pass.value.trim();
 
-loginBox.style.display="none";
-adminPanel.style.display="block";
+try{
 
-loadUsers();
+let res=await auth.signInWithEmailAndPassword(adminEmail,adminPass);
 
-})
-.catch(()=>{
-loginMsg.innerText="Wrong Email / Password";
-});
+let doc=await db.collection("Users").doc(res.user.uid).get();
+
+if(!doc.exists || doc.data().role!=="admin"){
+
+await auth.signOut();
+msg.innerText="Not Admin ❌";
+return;
 
 }
+
+loginBox.style.display="none";
+panel.style.display="block";
+loadUsers();
+
+}catch{
+
+msg.innerText="Wrong Login";
+
+}
+
+}
+
+
+/* LOGOUT */
 
 function logout(){
+
 auth.signOut();
 location.reload();
+
 }
-
-
-auth.onAuthStateChanged(user=>{
-
-if(user){
-loginBox.style.display="none";
-adminPanel.style.display="block";
-loadUsers();
-}
-
-});
 
 
 /* ADD USER */
-async function forceAddUser(){
 
-let name=addName.value;
-let email=addEmail.value;
-let pass=addPass.value;
-let phone=addPhone.value;
-let role=addRole.value;
+async function addUser(){
 
-if(!name||!email||!pass||!phone){
-alert("Fill all fields");
+if(!adminEmail || !adminPass){
+alert("Re-login required");
+return;
+}
+
+let n=name.value;
+let e=uemail.value;
+let p=upass.value;
+let ph=phone.value;
+let r=role.value;
+
+if(!n||!e||!p||!ph){
+alert("Fill all");
 return;
 }
 
 try{
 
-let user=await auth.createUserWithEmailAndPassword(email,pass);
+let res=await auth.createUserWithEmailAndPassword(e,p);
 
-await db.collection("Users").doc(user.user.uid).set({
+await db.collection("Users").doc(res.user.uid).set({
 
-name,email,phone,role,
+name:n,
+email:e,
+phone:ph,
+role:r,
 status:"Active",
 time:firebase.firestore.FieldValue.serverTimestamp()
 
 });
 
-alert("User Added");
+await auth.signOut();
 
+await auth.signInWithEmailAndPassword(adminEmail,adminPass);
+
+alert("User Added");
 loadUsers();
 
 }catch(e){
+
 alert(e.message);
+
 }
 
 }
 
 
 /* LOAD USERS */
+
 async function loadUsers(){
 
 let snap=await db.collection("Users").get();
 
-userList.innerHTML="";
+list.innerHTML="";
 
 let p=0,c=0;
 
@@ -333,28 +383,24 @@ snap.forEach(doc=>{
 
 let d=doc.data();
 
-if(d.role=="partner")p++;
-else c++;
+if(d.role==="partner")p++;
+else if(d.role==="citizen")c++;
 
-userList.innerHTML+=`
+list.innerHTML+=`
 
 <tr>
 
-<td>${d.name}<br><small>${d.phone}</small></td>
-
+<td>${d.name}</td>
+<td>${d.phone}</td>
 <td>${d.role}</td>
-
 <td>${d.status}</td>
-
 <td>${d.blockUntil?new Date(d.blockUntil.seconds*1000).toLocaleDateString():"-"}</td>
 
 <td>
 
-<button class="btn btn-block" onclick="blockUser('${doc.id}')">Block</button>
-
-<button class="btn btn-unblock" onclick="unblockUser('${doc.id}')">Unblock</button>
-
-<button class="btn btn-delete" onclick="deleteUser('${doc.id}')">Delete</button>
+<button class="btn block" onclick="block('${doc.id}')">Block</button>
+<button class="btn unblock" onclick="unblock('${doc.id}')">Unblock</button>
+<button class="btn del" onclick="del('${doc.id}')">Delete</button>
 
 </td>
 
@@ -364,18 +410,18 @@ userList.innerHTML+=`
 
 });
 
-countAll.innerText=p+c;
-countPartner.innerText=p;
-countCitizen.innerText=c;
+all.innerText=p+c;
+partner.innerText=p;
+citizen.innerText=c;
 
 }
 
 
 /* ACTIONS */
 
-async function blockUser(id){
+async function block(id){
 
-let d=prompt("Days to block?");
+let d=prompt("Days?");
 
 if(!d)return;
 
@@ -393,7 +439,7 @@ loadUsers();
 
 }
 
-async function unblockUser(id){
+async function unblock(id){
 
 await db.collection("Users").doc(id).update({
 
@@ -406,7 +452,7 @@ loadUsers();
 
 }
 
-async function deleteUser(id){
+async function del(id){
 
 if(confirm("Delete User?")){
 
