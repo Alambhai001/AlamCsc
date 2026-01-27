@@ -5,7 +5,6 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
@@ -19,59 +18,39 @@ background:#111;
 color:#fff;
 }
 
-/* BOX */
 .box{
-width:100%;
-max-width:500px;
-min-height:100vh;
+max-width:520px;
 margin:auto;
+min-height:100vh;
 background:#fff;
 color:#000;
 padding:15px;
-box-sizing:border-box;
 }
 
-/* INPUT */
-input,button{
+input,button,select{
 width:100%;
 padding:12px;
 margin:6px 0;
 border-radius:6px;
 border:1px solid #ccc;
-font-size:15px;
 }
 
-/* BUTTON */
 button{
 background:#28a745;
 color:white;
 border:none;
-cursor:pointer;
 font-weight:bold;
 }
 
-button:hover{opacity:.9}
-
 .red{background:red}
+.orange{background:orange}
 
-/* LIST */
-.item{
-border:1px solid #ddd;
+.item,.orderBox{
+border:1px solid #ccc;
 padding:8px;
 margin:6px 0;
 border-radius:6px;
-display:flex;
-justify-content:space-between;
-align-items:center;
 font-size:14px;
-}
-
-.orderBox{
-border:1px solid #ccc;
-padding:8px;
-margin:8px 0;
-border-radius:6px;
-font-size:13px;
 }
 
 </style>
@@ -79,13 +58,12 @@ font-size:13px;
 
 <body>
 
-<!-- LOGIN -->
 <div class="box" id="loginBox">
 
-<h2>🔐 Admin Login</h2>
+<h2>Admin Login</h2>
 
 <input id="email" placeholder="Email">
-<input id="pass" type="password" placeholder="Password">
+<input id="pass" type="password">
 
 <button onclick="login()">Login</button>
 
@@ -94,30 +72,43 @@ font-size:13px;
 </div>
 
 
-<!-- PANEL -->
 <div class="box" id="panel" style="display:none">
 
 <h2>📦 Admin Dashboard</h2>
 
 <hr>
 
+<!-- SALES -->
+<h3>📊 Sales Report</h3>
+
+<select id="filter" onchange="loadOrders()">
+<option value="1">Today</option>
+<option value="7">Last 7 Days</option>
+<option value="30">Last 30 Days</option>
+</select>
+
+<h4>Total: ₹<span id="totalSale">0</span></h4>
+
+<hr>
+
+<!-- ADD PRODUCT -->
 <h3>Add Product</h3>
 
-<input id="pname" placeholder="Product Name">
-<input id="price" type="number" placeholder="Price ₹">
+<input id="pname" placeholder="Name">
+<input id="price" type="number" placeholder="Price">
 <input id="stock" type="number" placeholder="Stock">
 
-<button onclick="addProduct()">➕ Add</button>
+<button onclick="addProduct()">Add</button>
 
 <hr>
 
 <h3>Products</h3>
-<div id="products">Loading...</div>
+<div id="products"></div>
 
 <hr>
 
-<h3>Orders</h3>
-<div id="orders">Loading...</div>
+<h3>Orders 🔔</h3>
+<div id="orders"></div>
 
 <hr>
 
@@ -128,15 +119,15 @@ font-size:13px;
 
 <script>
 
-/* FIREBASE CONFIG */
+/* FIREBASE */
 firebase.initializeApp({
-apiKey: "AIzaSyA8O4kOinBczBQ8r9mbtOdH98X70ezpgYk",
-authDomain: "new-prototype-s7zo4.firebaseapp.com",
-projectId: "new-prototype-s7zo4"
+apiKey:"AIzaSyA8O4kOinBczBQ8r9mbtOdH98X70ezpgYk",
+authDomain:"new-prototype-s7zo4.firebaseapp.com",
+projectId:"new-prototype-s7zo4"
 });
 
-const auth = firebase.auth();
-const db = firebase.firestore();
+const auth=firebase.auth();
+const db=firebase.firestore();
 
 
 /* AUTO LOGIN */
@@ -144,14 +135,11 @@ auth.onAuthStateChanged(async user=>{
 
 if(!user) return;
 
-let doc = await db.collection("Users").doc(user.uid).get();
+let doc=await db.collection("Users").doc(user.uid).get();
 
-if(!doc.exists || doc.data().role!=="admin"){
-
-alert("Not Admin ❌");
+if(!doc.exists||doc.data().role!=="admin"){
 auth.signOut();
 return;
-
 }
 
 loginBox.style.display="none";
@@ -159,6 +147,7 @@ panel.style.display="block";
 
 loadProducts();
 loadOrders();
+listenOrders();
 
 });
 
@@ -166,61 +155,66 @@ loadOrders();
 /* LOGIN */
 async function login(){
 
-msg.innerText="";
-
 try{
 
-let cred = await auth.signInWithEmailAndPassword(
-email.value.trim(),
-pass.value.trim()
+let c=await auth.signInWithEmailAndPassword(
+email.value,pass.value
 );
 
-let doc = await db.collection("Users")
-.doc(cred.user.uid).get();
+let d=await db.collection("Users").doc(c.user.uid).get();
 
-if(!doc.exists || doc.data().role!=="admin"){
-
-msg.innerText="Not Admin Account ❌";
+if(d.data().role!=="admin"){
+alert("Not Admin");
 auth.signOut();
 return;
-
 }
-
-loginBox.style.display="none";
-panel.style.display="block";
-
-loadProducts();
-loadOrders();
 
 }catch{
-
-msg.innerText="Wrong Email / Password";
+msg.innerText="Wrong Login";
+}
 
 }
+
+
+/* REALTIME ORDER ALERT */
+function listenOrders(){
+
+db.collection("Orders")
+.orderBy("time","desc")
+.limit(1)
+.onSnapshot(snap=>{
+
+snap.docChanges().forEach(c=>{
+
+if(c.type==="added"){
+alert("🔔 New Order Received!");
+loadOrders();
+}
+
+});
+
+});
 
 }
 
 
 /* LOGOUT */
 function logout(){
-
 auth.signOut();
 location.reload();
-
 }
 
 
 /* ADD PRODUCT */
 async function addProduct(){
 
-if(!pname.value||!price.value||!stock.value)
-return alert("Fill All Fields");
+if(!pname.value)return;
 
 await db.collection("Products").add({
 
 name:pname.value,
-price:Number(price.value),
-stock:Number(stock.value),
+price:+price.value,
+stock:+stock.value,
 time:firebase.firestore.FieldValue.serverTimestamp()
 
 });
@@ -231,36 +225,26 @@ stock.value="";
 
 loadProducts();
 
-alert("Product Added ✅");
-
 }
 
 
-/* LOAD PRODUCTS */
+/* PRODUCTS */
 async function loadProducts(){
 
-let snap = await db.collection("Products")
-.orderBy("time","desc").get();
+let snap=await db.collection("Products").get();
 
 products.innerHTML="";
 
-if(snap.empty){
-products.innerHTML="No Products";
-return;
-}
-
 snap.forEach(d=>{
 
-let p = d.data();
+let p=d.data();
 
 products.innerHTML+=`
 
 <div class="item">
 
-<span>
 ${p.name} ₹${p.price}
 (Stock:${p.stock})
-</span>
 
 <button onclick="del('${d.id}')">❌</button>
 
@@ -273,52 +257,76 @@ ${p.name} ₹${p.price}
 }
 
 
-/* DELETE */
-async function del(id){
-
-if(!confirm("Delete Product?")) return;
-
-await db.collection("Products").doc(id).delete();
-
+function del(id){
+db.collection("Products").doc(id).delete();
 loadProducts();
-
 }
 
 
-/* LOAD ORDERS */
+/* ORDERS */
 async function loadOrders(){
 
-let snap = await db.collection("Orders")
-.orderBy("time","desc").get();
+let days=filter.value;
+
+let from=new Date();
+from.setDate(from.getDate()-days);
+
+let snap=await db.collection("Orders")
+.where("time",">=",from)
+.orderBy("time","desc")
+.get();
 
 orders.innerHTML="";
 
-if(snap.empty){
-orders.innerHTML="No Orders";
-return;
-}
+let total=0;
 
 snap.forEach(d=>{
 
 let o=d.data();
 
+total+=o.total;
+
 orders.innerHTML+=`
 
 <div class="orderBox">
 
-<b>${o.name}</b><br>
-📱 ${o.mobile}<br>
-🏠 ${o.address}<br><br>
+<b>${o.name}</b>
+(${o.mobile})<br>
 
 ${o.items}<br>
 
-💰 ₹${o.total}
+₹${o.total}<br>
+
+Status: <b>${o.status}</b><br>
+
+<button class="orange"
+onclick="cancelOrder('${d.id}')">
+Cancel
+</button>
 
 </div>
 
 `;
 
 });
+
+totalSale.innerText=total;
+
+}
+
+
+/* CANCEL ORDER */
+async function cancelOrder(id){
+
+if(!confirm("Cancel Order?")) return;
+
+await db.collection("Orders").doc(id).update({
+
+status:"Cancelled"
+
+});
+
+loadOrders();
 
 }
 
