@@ -1,82 +1,113 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Login - Alam CSC</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mumbai Elite | Login</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
 
-  <style>
-    body{
-      font-family: Arial;
-      background:#f2f2f2;
-      display:flex;
-      justify-content:center;
-      align-items:center;
-      height:100vh;
-    }
+<style>
 
-    .box{
-      background:#fff;
-      padding:20px;
-      width:300px;
-      border-radius:8px;
-      text-align:center;
-      box-shadow:0 0 10px #aaa;
-    }
+body{
+font-family:Arial;
+background:linear-gradient(135deg,#0072bc,#00c6ff);
+display:flex;
+justify-content:center;
+align-items:center;
+height:100vh;
+margin:0;
+}
 
-    input{
-      width:100%;
-      padding:10px;
-      margin:8px 0;
-    }
+/* LOGIN BOX */
+.box{
+background:white;
+padding:25px;
+width:320px;
+border-radius:12px;
+text-align:center;
+box-shadow:0 10px 25px rgba(0,0,0,0.3);
+}
 
-    button{
-      width:100%;
-      padding:10px;
-      background:green;
-      color:white;
-      border:none;
-      cursor:pointer;
-    }
+h2{margin-bottom:15px}
 
-    #msg{
-      color:red;
-      margin-top:10px;
-    }
+/* INPUT */
+input{
+width:100%;
+padding:12px;
+margin:8px 0;
+border-radius:6px;
+border:1px solid #ccc;
+font-size:14px;
+}
 
-    a{
-      display:block;
-      margin-top:10px;
-    }
-  </style>
+/* BUTTON */
+button{
+width:100%;
+padding:12px;
+background:#0072bc;
+color:white;
+border:none;
+border-radius:6px;
+font-weight:bold;
+cursor:pointer;
+font-size:15px;
+}
+
+button:disabled{
+background:#999;
+}
+
+/* MSG */
+#msg{
+margin-top:10px;
+font-size:13px;
+color:red;
+}
+
+/* LINK */
+a{
+display:block;
+margin-top:12px;
+color:#0072bc;
+font-size:14px;
+text-decoration:none;
+}
+
+.loading{
+color:green;
+}
+
+</style>
 </head>
 
 <body>
 
 <div class="box">
 
-  <h2>Login</h2>
+<h2>🔐 Mumbai Elite Login</h2>
 
-  <input type="email" id="loginEmail" placeholder="Email">
+<input type="email" id="loginEmail" placeholder="Email">
 
-  <input type="password" id="loginPass" placeholder="Password">
+<input type="password" id="loginPass" placeholder="Password">
 
-  <button onclick="handleLogin()">Login</button>
+<button id="loginBtn" onclick="handleLogin()">Login</button>
 
-  <p id="msg"></p>
+<p id="msg"></p>
 
-  <a href="register.html">Create Account</a>
+<a href="register.html">Create New Account</a>
 
 </div>
 
+
 <script>
+
+/* FIREBASE CONFIG */
 const firebaseConfig = {
-  apiKey: "AIzaSyA8O4kOinBczBQ8r9mbtOdH98X70ezpgYk",
-  authDomain: "new-prototype-s7zo4.firebaseapp.com",
-  projectId: "new-prototype-s7zo4"
+apiKey: "AIzaSyA8O4kOinBczBQ8r9mbtOdH98X70ezpgYk",
+authDomain: "new-prototype-s7zo4.firebaseapp.com",
+projectId: "new-prototype-s7zo4"
 };
 
 firebase.initializeApp(firebaseConfig);
@@ -84,36 +115,88 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 
-async function handleLogin() {
 
-  const email = document.getElementById('loginEmail').value;
-  const pass = document.getElementById('loginPass').value;
+/* AUTO LOGIN */
+auth.onAuthStateChanged(user=>{
 
-  try {
-
-    const userCred = await auth.signInWithEmailAndPassword(email, pass);
-
-    const doc = await db.collection("Users")
-                       .doc(userCred.user.uid)
-                       .get();
-
-    const data = doc.data();
-
-    // Agar user blocked ho
-    if(data && data.status === "Blocked"){
-      document.getElementById("msg").innerHTML = "Account Blocked!";
-      return;
-    }
-
-    // ✅ Direct Dashboard
-    window.location.href = "dashboard.html";
-
-  } catch(e) {
-
-    document.getElementById("msg").innerHTML = e.message;
-
-  }
+if(user){
+checkUser(user.uid);
 }
+
+});
+
+
+/* LOGIN */
+async function handleLogin(){
+
+let email=loginEmail.value.trim();
+let pass=loginPass.value.trim();
+
+if(!email||!pass){
+msg.innerText="Fill all fields";
+return;
+}
+
+loginBtn.disabled=true;
+msg.innerHTML="<span class='loading'>Logging in...</span>";
+
+try{
+
+let cred=await auth.signInWithEmailAndPassword(email,pass);
+
+checkUser(cred.user.uid);
+
+}catch(e){
+
+msg.innerText="Wrong Email or Password";
+loginBtn.disabled=false;
+
+}
+
+}
+
+
+/* CHECK ROLE */
+async function checkUser(uid){
+
+try{
+
+let doc=await db.collection("Users").doc(uid).get();
+
+if(!doc.exists){
+msg.innerText="No profile found";
+return;
+}
+
+let data=doc.data();
+
+
+/* BLOCK CHECK */
+if(data.status==="Blocked"){
+await auth.signOut();
+msg.innerText="Account Blocked ❌";
+loginBtn.disabled=false;
+return;
+}
+
+
+/* REDIRECT */
+if(data.role==="admin"){
+location="admin.html";
+}
+else{
+location="dashboard.html";
+}
+
+}catch{
+
+msg.innerText="Server Error";
+loginBtn.disabled=false;
+
+}
+
+}
+
 </script>
 
 </body>
