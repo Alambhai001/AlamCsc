@@ -2,38 +2,41 @@
 <html>
 <head>
 <title>Admin Panel | Aftab Store</title>
-
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
+<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
 
 <style>
-
 body{
-font-family:Arial;
 margin:0;
+font-family:Arial;
 background:#111;
 color:#fff;
 }
 
 .box{
 width:100%;
+max-width:500px;
 min-height:100vh;
-margin:0;
+margin:auto;
 background:#fff;
 color:#000;
 padding:15px;
 box-sizing:border-box;
 }
 
-input,button,select{
+h2,h3{text-align:center}
+
+input,button{
 width:100%;
 padding:12px;
 margin:6px 0;
 border-radius:6px;
 border:1px solid #ccc;
+font-size:15px;
 }
 
 button{
@@ -47,21 +50,29 @@ font-weight:bold;
 .orange{background:orange}
 
 .item,.orderBox{
-border:1px solid #ccc;
+border:1px solid #ddd;
 padding:8px;
 margin:6px 0;
 border-radius:6px;
 font-size:14px;
 }
 
+.stat{
+background:#eee;
+padding:8px;
+margin:5px 0;
+border-radius:5px;
+font-weight:bold;
+}
 </style>
 </head>
 
 <body>
 
+<!-- LOGIN -->
 <div class="box" id="loginBox">
 
-<h2>Admin Login</h2>
+<h2>🔐 Admin Login</h2>
 
 <input id="email" placeholder="Email">
 <input id="pass" type="password">
@@ -73,43 +84,38 @@ font-size:14px;
 </div>
 
 
+<!-- PANEL -->
 <div class="box" id="panel" style="display:none">
 
 <h2>📦 Admin Dashboard</h2>
 
-<hr>
-
-<!-- SALES -->
-<h3>📊 Sales Report</h3>
-
-<select id="filter" onchange="loadOrders()">
-<option value="1">Today</option>
-<option value="7">Last 7 Days</option>
-<option value="30">Last 30 Days</option>
-</select>
-
-<h4>Total: ₹<span id="totalSale">0</span></h4>
+<!-- REPORT -->
+<div class="stat">Today: ₹ <span id="today">0</span></div>
+<div class="stat">7 Days: ₹ <span id="week">0</span></div>
+<div class="stat">30 Days: ₹ <span id="month">0</span></div>
 
 <hr>
 
 <!-- ADD PRODUCT -->
 <h3>Add Product</h3>
 
-<input id="pname" placeholder="Name">
-<input id="price" type="number" placeholder="Price">
+<input id="pname" placeholder="Product Name">
+<input id="price" type="number" placeholder="Price ₹">
 <input id="stock" type="number" placeholder="Stock">
 
-<button onclick="addProduct()">Add</button>
+<button onclick="addProduct()">➕ Add</button>
 
 <hr>
 
+<!-- PRODUCTS -->
 <h3>Products</h3>
-<div id="products"></div>
+<div id="products">Loading...</div>
 
 <hr>
 
-<h3>Orders 🔔</h3>
-<div id="orders"></div>
+<!-- ORDERS -->
+<h3>Orders</h3>
+<div id="orders">Loading...</div>
 
 <hr>
 
@@ -122,13 +128,15 @@ font-size:14px;
 
 /* FIREBASE */
 firebase.initializeApp({
-apiKey:"AIzaSyA8O4kOinBczBQ8r9mbtOdH98X70ezpgYk",
-authDomain:"new-prototype-s7zo4.firebaseapp.com",
-projectId:"new-prototype-s7zo4"
+apiKey: "AIzaSyA8O4kOinBczBQ8r9mbtOdH98X70ezpgYk",
+authDomain: "new-prototype-s7zo4.firebaseapp.com",
+projectId: "new-prototype-s7zo4"
 });
 
 const auth=firebase.auth();
 const db=firebase.firestore();
+
+let lastOrderCount=0;
 
 
 /* AUTO LOGIN */
@@ -138,7 +146,8 @@ if(!user) return;
 
 let doc=await db.collection("Users").doc(user.uid).get();
 
-if(!doc.exists||doc.data().role!=="admin"){
+if(!doc.exists || doc.data().role!=="admin"){
+alert("Not Admin ❌");
 auth.signOut();
 return;
 }
@@ -146,9 +155,7 @@ return;
 loginBox.style.display="none";
 panel.style.display="block";
 
-loadProducts();
-loadOrders();
-listenOrders();
+loadAll();
 
 });
 
@@ -158,43 +165,27 @@ async function login(){
 
 try{
 
-let c=await auth.signInWithEmailAndPassword(
+let cred=await auth.signInWithEmailAndPassword(
 email.value,pass.value
 );
 
-let d=await db.collection("Users").doc(c.user.uid).get();
+let doc=await db.collection("Users")
+.doc(cred.user.uid).get();
 
-if(d.data().role!=="admin"){
-alert("Not Admin");
+if(doc.data().role!=="admin"){
+msg.innerText="Not Admin ❌";
 auth.signOut();
 return;
 }
 
+loginBox.style.display="none";
+panel.style.display="block";
+
+loadAll();
+
 }catch{
 msg.innerText="Wrong Login";
 }
-
-}
-
-
-/* REALTIME ORDER ALERT */
-function listenOrders(){
-
-db.collection("Orders")
-.orderBy("time","desc")
-.limit(1)
-.onSnapshot(snap=>{
-
-snap.docChanges().forEach(c=>{
-
-if(c.type==="added"){
-alert("🔔 New Order Received!");
-loadOrders();
-}
-
-});
-
-});
 
 }
 
@@ -206,16 +197,26 @@ location.reload();
 }
 
 
+/* LOAD ALL */
+function loadAll(){
+loadProducts();
+loadOrders();
+loadReport();
+listenOrders();
+}
+
+
 /* ADD PRODUCT */
 async function addProduct(){
 
-if(!pname.value)return;
+if(!pname.value||!price.value||!stock.value)
+return alert("Fill All");
 
 await db.collection("Products").add({
 
 name:pname.value,
-price:+price.value,
-stock:+stock.value,
+price:Number(price.value),
+stock:Number(stock.value),
 time:firebase.firestore.FieldValue.serverTimestamp()
 
 });
@@ -225,6 +226,7 @@ price.value="";
 stock.value="";
 
 loadProducts();
+alert("Added ✅");
 
 }
 
@@ -232,9 +234,15 @@ loadProducts();
 /* PRODUCTS */
 async function loadProducts(){
 
-let snap=await db.collection("Products").get();
+let snap=await db.collection("Products")
+.orderBy("time","desc").get();
 
 products.innerHTML="";
+
+if(snap.empty){
+products.innerHTML="No Products";
+return;
+}
 
 snap.forEach(d=>{
 
@@ -258,52 +266,54 @@ ${p.name} ₹${p.price}
 }
 
 
-function del(id){
-db.collection("Products").doc(id).delete();
+/* DELETE */
+async function del(id){
+
+if(!confirm("Delete?")) return;
+
+await db.collection("Products").doc(id).delete();
+
 loadProducts();
+
 }
 
 
 /* ORDERS */
 async function loadOrders(){
 
-let days=filter.value;
-
-let from=new Date();
-from.setDate(from.getDate()-days);
-
 let snap=await db.collection("Orders")
-.where("time",">=",from)
-.orderBy("time","desc")
-.get();
+.orderBy("time","desc").get();
 
 orders.innerHTML="";
 
-let total=0;
+if(snap.empty){
+orders.innerHTML="No Orders";
+return;
+}
+
+lastOrderCount=snap.size;
 
 snap.forEach(d=>{
 
 let o=d.data();
 
-total+=o.total;
-
 orders.innerHTML+=`
 
 <div class="orderBox">
 
-<b>${o.name}</b>
-(${o.mobile})<br>
+<b>${o.name}</b><br>
+📱 ${o.mobile}<br>
+🏠 ${o.address}<br><br>
 
 ${o.items}<br>
 
-₹${o.total}<br>
+💰 ₹${o.total}<br>
+Status: ${o.status||"Pending"}
 
-Status: <b>${o.status}</b><br>
+<br><br>
 
 <button class="orange"
-onclick="cancelOrder('${d.id}')">
-Cancel
-</button>
+onclick="cancelOrder('${d.id}')">Cancel</button>
 
 </div>
 
@@ -311,23 +321,72 @@ Cancel
 
 });
 
-totalSale.innerText=total;
-
 }
 
 
-/* CANCEL ORDER */
+/* CANCEL */
 async function cancelOrder(id){
 
 if(!confirm("Cancel Order?")) return;
 
 await db.collection("Orders").doc(id).update({
-
 status:"Cancelled"
+});
+
+alert("Cancelled ❌");
+loadOrders();
+
+}
+
+
+/* REPORT */
+async function loadReport(){
+
+let snap=await db.collection("Orders").get();
+
+let t=0,w=0,m=0;
+
+let now=new Date();
+
+snap.forEach(d=>{
+
+let o=d.data();
+
+if(!o.time||o.status=="Cancelled") return;
+
+let dt=o.time.toDate();
+let diff=(now-dt)/(1000*60*60*24);
+
+if(diff<1) t+=o.total;
+if(diff<7) w+=o.total;
+if(diff<30) m+=o.total;
 
 });
 
+today.innerText=t;
+week.innerText=w;
+month.innerText=m;
+
+}
+
+
+/* NEW ORDER ALERT */
+function listenOrders(){
+
+db.collection("Orders").onSnapshot(snap=>{
+
+if(snap.size>lastOrderCount){
+
+alert("📢 New Order Received!");
+
 loadOrders();
+loadReport();
+
+}
+
+lastOrderCount=snap.size;
+
+});
 
 }
 
