@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Aftab Store | Mini Amazon</title>
+<meta name="viewport" content="width=device-width">
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-storage-compat.js"></script>
+
+<style>
+
+body{margin:0;font-family:Arial;background:#f2f2f2}
+
+/* HEADER */
+header{
+background:#28a745;
+color:white;
+padding:12px;
+text-align:center;
+font-size:18px;
+}
+
+/* BOX */
+.box{
+background:white;
+margin:8px;
+padding:12px;
+border-radius:8px;
+}
+
+/* INPUT */
+input,select,button{
+width:100%;
+padding:10px;
+margin:5px 0;
+border-radius:5px;
+border:1px solid #ccc;
+}
+
+button{
+background:#28a745;
+color:white;
+border:none;
+font-weight:bold;
+}
+
+.red{background:red}
+.blue{background:#0072bc}
+
+/* PRODUCT */
+.product{
+border:1px solid #ddd;
+padding:8px;
+margin:6px 0;
+border-radius:6px;
+display:flex;
+gap:8px;
+}
+
+.product img{
+width:80px;
+height:80px;
+object-fit:cover;
+border-radius:6px;
+}
+
+.cartItem{
+border-bottom:1px solid #ccc;
+padding:5px;
+}
+
+/* HIDE */
+.hide{display:none}
+
+</style>
+</head>
+
+<body>
+
+<header>🛒 Aftab Mini Amazon</header>
+
+
+<!-- LOGIN -->
+<div class="box" id="loginBox">
+
+<h3>Login</h3>
+
+<input id="email" placeholder="Email">
+<input id="pass" type="password">
+
+<button onclick="login()">Login</button>
+
+<p id="msg"></p>
+
+<p onclick="showRegister()" style="color:blue">New? Register</p>
+
+</div>
+
+
+<!-- REGISTER -->
+<div class="box hide" id="regBox">
+
+<h3>Register</h3>
+
+<input id="rname" placeholder="Name">
+<input id="remail" placeholder="Email">
+<input id="rpass" type="password">
+<input id="rphone" placeholder="Phone">
+
+<button onclick="register()">Register</button>
+
+<p onclick="showLogin()" style="color:blue">Back</p>
+
+</div>
+
+
+<!-- USER -->
+<div id="userBox" class="hide">
+
+<div class="box">
+
+<input id="search" placeholder="🔍 Search" onkeyup="filter()">
+
+<select id="cat" onchange="filter()">
+<option value="">All</option>
+<option>Grocery</option>
+<option>Milk</option>
+<option>Food</option>
+</select>
+
+</div>
+
+
+<div class="box">
+<h3>Products</h3>
+<div id="products"></div>
+</div>
+
+
+<div class="box">
+<h3>🛒 Cart</h3>
+<div id="cart"></div>
+<p><b>Total ₹<span id="total">0</span></b></p>
+
+<button onclick="checkout()">Checkout</button>
+</div>
+
+
+<div class="box">
+<h3>My Orders</h3>
+<div id="myOrders"></div>
+</div>
+
+
+<div class="box">
+<button class="red" onclick="logout()">Logout</button>
+</div>
+
+</div>
+
+
+
+<!-- ADMIN -->
+<div id="adminBox" class="hide">
+
+<div class="box">
+<h2>Admin Panel</h2>
+</div>
+
+
+<div class="box">
+
+<h3>Add Product</h3>
+
+<input id="pname" placeholder="Name">
+<select id="pcat">
+<option>Grocery</option>
+<option>Milk</option>
+<option>Food</option>
+</select>
+
+<input type="file" id="pimg">
+
+<textarea id="pdesc" placeholder="Details"></textarea>
+
+<input id="pprice" type="number" placeholder="Price">
+<input id="pstock" type="number" placeholder="Stock">
+
+<button onclick="addProduct()">Add</button>
+
+</div>
+
+
+<div class="box">
+<h3>Orders</h3>
+<div id="orders"></div>
+</div>
+
+
+<div class="box">
+<button class="red" onclick="logout()">Logout</button>
+</div>
+
+</div>
+
+
+
+<script>
+
+/* FIREBASE */
+firebase.initializeApp({
+
+apiKey:"AIzaSyA8O4kOinBczBQ8r9mbtOdH98X70ezpgYk",
+authDomain:"new-prototype-s7zo4.firebaseapp.com",
+projectId:"new-prototype-s7zo4",
+storageBucket:"new-prototype-s7zo4.appspot.com"
+
+});
+
+const auth=firebase.auth();
+const db=firebase.firestore();
+const storage=firebase.storage();
+
+let user=null;
+let role="";
+let cart=[];
+
+
+/* UI */
+function showLogin(){hide();loginBox.classList.remove("hide")}
+function showRegister(){hide();regBox.classList.remove("hide")}
+function hide(){
+loginBox.classList.add("hide");
+regBox.classList.add("hide");
+userBox.classList.add("hide");
+adminBox.classList.add("hide");
+}
+
+
+/* AUTH */
+auth.onAuthStateChanged(async u=>{
+
+if(!u)return;
+
+user=u;
+
+let d=await db.collection("Users").doc(u.uid).get();
+
+role=d.data().role;
+
+hide();
+
+if(role=="admin"){
+adminBox.classList.remove("hide");
+loadOrders();
+}else{
+userBox.classList.remove("hide");
+loadProducts();
+loadMyOrders();
+}
+
+});
+
+
+/* LOGIN */
+function login(){
+auth.signInWithEmailAndPassword(email.value,pass.value)
+.catch(()=>msg.innerText="Wrong Login");
+}
+
+
+/* REGISTER */
+async function register(){
+
+let c=await auth.createUserWithEmailAndPassword(
+remail.value,rpass.value
+);
+
+await db.collection("Users").doc(c.user.uid).set({
+name:rname.value,
+phone:rphone.value,
+role:"user"
+});
+
+alert("Registered");
+showLogin();
+
+}
+
+
+/* LOGOUT */
+function logout(){auth.signOut();location.reload()}
+
+
+/* LOAD PRODUCTS */
+async function loadProducts(){
+
+let snap=await db.collection("Products").get();
+
+products.innerHTML="";
+
+snap.forEach(d=>{
+
+let p=d.data();
+
+products.innerHTML+=`
+
+<div class="product" data-cat="${p.cat}" data-name="${p.name}">
+
+<img src="${p.img}">
+
+<div>
+
+<b>${p.name}</b><br>
+${p.desc}<br>
+₹${p.price}<br>
+
+<button onclick="addCart('${d.id}','${p.name}',${p.price})">
+Add
+</button>
+
+</div>
+</div>
+
+`;
+
+});
+
+}
+
+
+/* FILTER */
+function filter(){
+
+let s=search.value.toLowerCase();
+let c=cat.value;
+
+document.querySelectorAll(".product").forEach(p=>{
+
+let ok=true;
+
+if(s && !p.dataset.name.toLowerCase().includes(s)) ok=false;
+if(c && p.dataset.cat!=c) ok=false;
+
+p.style.display=ok?"flex":"none";
+
+});
+
+}
+
+
+/* CART */
+function addCart(id,n,p){
+
+cart.push({id,n,p});
+
+renderCart();
+
+}
+
+
+function renderCart(){
+
+cartBox="";
+
+let t=0;
+
+cart.forEach((c,i)=>{
+
+t+=c.p;
+
+cartBox+=`
+
+<div class="cartItem">
+
+${c.n} ₹${c.p}
+<button onclick="rem(${i})">❌</button>
+
+</div>
+
+`;
+
+});
+
+cart.innerHTML=cartBox;
+total.innerText=t;
+
+}
+
+
+function rem(i){
+
+cart.splice(i,1);
+renderCart();
+
+}
+
+
+/* CHECKOUT */
+async function checkout(){
+
+if(cart.length==0) return alert("Cart empty");
+
+let items="";
+let tot=0;
+
+cart.forEach(c=>{
+items+=c.n+" ₹"+c.p+"\n";
+tot+=c.p;
+});
+
+await db.collection("Orders").add({
+
+uid:user.uid,
+items,
+total:tot,
+status:"Pending",
+time:firebase.firestore.FieldValue.serverTimestamp()
+
+});
+
+alert("Order Done");
+
+cart=[];
+renderCart();
+loadMyOrders();
+
+}
+
+
+/* MY ORDERS */
+async function loadMyOrders(){
+
+let s=await db.collection("Orders")
+.where("uid","==",user.uid).get();
+
+myOrders.innerHTML="";
+
+s.forEach(d=>{
+
+let o=d.data();
+
+myOrders.innerHTML+=`
+
+<div class="box">
+
+${o.items}<br>
+₹${o.total}<br>
+Status: ${o.status}
+
+</div>
+
+`;
+
+});
+
+}
+
+
+/* ADMIN ADD */
+async function addProduct(){
+
+let f=pimg.files[0];
+
+let r=storage.ref("p/"+Date.now()+f.name);
+
+await r.put(f);
+
+let url=await r.getDownloadURL();
+
+await db.collection("Products").add({
+
+name:pname.value,
+cat:pcat.value,
+desc:pdesc.value,
+price:Number(pprice.value),
+stock:Number(pstock.value),
+img:url
+
+});
+
+alert("Added");
+
+}
+
+
+/* ADMIN ORDERS */
+async function loadOrders(){
+
+let s=await db.collection("Orders").get();
+
+orders.innerHTML="";
+
+s.forEach(d=>{
+
+let o=d.data();
+
+orders.innerHTML+=`
+
+<div class="box">
+
+${o.items}<br>
+₹${o.total}<br>
+${o.status}<br>
+
+<button onclick="set('${d.id}','Accepted')">✔</button>
+<button class="red" onclick="set('${d.id}','Cancel')">❌</button>
+
+</div>
+
+`;
+
+});
+
+}
+
+
+async function set(id,s){
+
+await db.collection("Orders").doc(id).update({
+status:s
+});
+
+loadOrders();
+
+}
+
+</script>
+
+</body>
+</html>
