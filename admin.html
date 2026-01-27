@@ -1,228 +1,423 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mumbai Elite | Master Admin Control</title>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <style>
-        :root { --blue: #0072bc; --orange: #f37021; --green: #2e7d32; --red: #d32f2f; }
-        
-        body { 
-            font-family: 'Roboto', sans-serif; 
-            margin: 0; 
-            background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('https://images.unsplash.com/photo-1570160897040-30430ade2211?w=1600'); 
-            background-size: cover; 
-            background-attachment: fixed;
-            color: #fff;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mumbai Elite | Admin Panel</title>
 
-        .admin-header { 
-            background: rgba(255, 255, 255, 0.1); 
-            backdrop-filter: blur(10px); 
-            padding: 20px 5%; 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center;
-            border-bottom: 1px solid rgba(255,255,255,0.2);
-        }
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
 
-        /* Stats Cards */
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; padding: 20px 5%; }
-        .stat-card { 
-            background: rgba(255, 255, 255, 0.95); 
-            padding: 15px; 
-            border-radius: 12px; 
-            text-align: center; 
-            color: #333;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
-        }
-        .stat-card b { font-size: 24px; color: var(--blue); display: block; }
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
-        /* Force Add Form */
-        .quick-add { 
-            background: rgba(255, 255, 255, 0.95); 
-            margin: 20px 5%; 
-            padding: 25px; 
-            border-radius: 15px; 
-            color: #333;
-            box-shadow: 0 15px 30px rgba(0,0,0,0.4);
-        }
-        .form-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-top: 15px; }
-        input, select { padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; }
-        .btn-add { background: var(--green); color: white; border: none; padding: 12px; border-radius: 8px; font-weight: 900; cursor: pointer; }
+<style>
+:root{--blue:#0072bc;--orange:#f37021;--green:#2e7d32;--red:#d32f2f}
 
-        /* Table Area */
-        .table-container { 
-            margin: 20px 5% 50px; 
-            background: white; 
-            border-radius: 15px; 
-            overflow-x: auto; 
-            color: #333;
-        }
-        table { width: 100%; border-collapse: collapse; min-width: 900px; }
-        th { background: #f8f9fa; padding: 15px; text-align: left; font-weight: 900; font-size: 12px; color: #666; text-transform: uppercase; }
-        td { padding: 15px; border-bottom: 1px solid #eee; }
-        
-        .user-img { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 2px solid var(--blue); }
-        .role-badge { padding: 4px 10px; border-radius: 20px; font-size: 10px; font-weight: bold; }
-        .role-partner { background: #fff3e0; color: var(--orange); }
-        .role-citizen { background: #e8f5e9; color: var(--green); }
-        
-        .btn { padding: 7px 12px; border-radius: 6px; border: none; cursor: pointer; font-weight: bold; font-size: 11px; margin: 2px; }
-        .btn-block { background: var(--orange); color: white; }
-        .btn-delete { background: var(--red); color: white; }
-        .btn-unblock { background: var(--green); color: white; }
-    </style>
+body{
+font-family:Arial;
+margin:0;
+background:#111;
+color:#fff;
+}
+
+/* LOGIN */
+#loginBox{
+max-width:350px;
+margin:120px auto;
+background:white;
+color:#333;
+padding:25px;
+border-radius:12px;
+text-align:center;
+}
+
+#loginBox input{
+width:100%;
+padding:10px;
+margin:8px 0;
+border-radius:6px;
+border:1px solid #ccc;
+}
+
+/* HEADER */
+.admin-header{
+background:#000;
+padding:15px 5%;
+display:flex;
+justify-content:space-between;
+align-items:center;
+}
+
+/* STATS */
+.stats-grid{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+gap:12px;
+padding:15px 5%;
+}
+
+.stat-card{
+background:white;
+color:#333;
+padding:15px;
+border-radius:10px;
+text-align:center;
+}
+
+/* FORM */
+.quick-add{
+background:white;
+color:#333;
+margin:20px 5%;
+padding:20px;
+border-radius:12px;
+}
+
+.form-row{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
+gap:10px;
+}
+
+input,select{
+padding:10px;
+border-radius:6px;
+border:1px solid #ccc;
+}
+
+.btn-add{
+background:var(--green);
+color:white;
+border:none;
+padding:12px;
+border-radius:6px;
+font-weight:bold;
+cursor:pointer;
+}
+
+/* TABLE */
+.table-container{
+margin:20px 5%;
+background:white;
+color:#333;
+border-radius:12px;
+overflow:auto;
+}
+
+table{
+width:100%;
+border-collapse:collapse;
+min-width:800px;
+}
+
+th,td{
+padding:12px;
+border-bottom:1px solid #eee;
+font-size:13px;
+}
+
+th{
+background:#f5f5f5;
+}
+
+.btn{
+padding:6px 10px;
+border:none;
+border-radius:5px;
+font-size:11px;
+cursor:pointer;
+}
+
+.btn-block{background:var(--orange);color:white}
+.btn-unblock{background:var(--green);color:white}
+.btn-delete{background:var(--red);color:white}
+
+</style>
 </head>
+
 <body>
 
-<div class="admin-header">
-    <div class="logo">
-        <h1 style="margin:0; font-size: 24px; letter-spacing: 1px;"><i class="fa-solid fa-city"></i> MUMBAI ELITE ADMIN</h1>
-        <small style="opacity:0.8">Master Control & User Management</small>
-    </div>
-    <button onclick="loadUsers()" class="btn" style="background:var(--blue); color:white; padding:10px 20px;">REFRESH DATA</button>
+<!-- LOGIN -->
+<div id="loginBox">
+
+<h2>🔐 Admin Login</h2>
+
+<input id="adminEmail" placeholder="Email">
+<input id="adminPass" type="password" placeholder="Password">
+
+<button onclick="adminLogin()"
+style="width:100%;padding:10px;background:#0072bc;color:white;border:none;border-radius:6px">
+LOGIN
+</button>
+
+<p id="loginMsg" style="color:red;font-size:13px"></p>
+
 </div>
+
+
+<!-- ADMIN PANEL -->
+<div id="adminPanel" style="display:none">
+
+<div class="admin-header">
+<h2>🏙️ Mumbai Elite Admin</h2>
+<button onclick="logout()" class="btn" style="background:red;color:white">LOGOUT</button>
+</div>
+
 
 <div class="stats-grid">
-    <div class="stat-card"><b id="countAll">0</b><span>Total Active Users</span></div>
-    <div class="stat-card"><b id="countPartner" style="color:var(--orange)">0</b><span>Rental Partners</span></div>
-    <div class="stat-card"><b id="countCitizen" style="color:var(--green)">0</b><span>Aam Aadmi (Clients)</span></div>
+
+<div class="stat-card">
+<b id="countAll">0</b><br>Total Users
 </div>
+
+<div class="stat-card">
+<b id="countPartner" style="color:var(--orange)">0</b><br>Partners
+</div>
+
+<div class="stat-card">
+<b id="countCitizen" style="color:var(--green)">0</b><br>Citizens
+</div>
+
+</div>
+
 
 <div class="quick-add">
-    <h3 style="margin-top:0; color:var(--blue);"><i class="fa-solid fa-plus-circle"></i> Admin Force Add (FREE)</h3>
-    <p style="font-size:12px; color:#666;">Yahan se aap kisi ko bhi FREE mein Rental ya Citizen bana kar add kar sakte hain.</p>
-    <div class="form-row">
-        <input type="text" id="addName" placeholder="Full Name">
-        <input type="email" id="addEmail" placeholder="Email Address">
-        <input type="password" id="addPass" placeholder="Set Password">
-        <input type="tel" id="addPhone" placeholder="Mobile Number">
-        <select id="addRole">
-            <option value="citizen">Citizen (Aam Aadmi)</option>
-            <option value="partner">Partner (Rental)</option>
-        </select>
-        <button class="btn-add" onclick="forceAddUser()">ACTIVATE NOW</button>
-    </div>
+
+<h3>➕ Add User</h3>
+
+<div class="form-row">
+
+<input id="addName" placeholder="Name">
+<input id="addEmail" placeholder="Email">
+<input id="addPass" type="password" placeholder="Password">
+<input id="addPhone" placeholder="Phone">
+
+<select id="addRole">
+<option value="citizen">Citizen</option>
+<option value="partner">Partner</option>
+</select>
+
+<button class="btn-add" onclick="forceAddUser()">ADD</button>
+
 </div>
+
+</div>
+
 
 <div class="table-container">
-    <table>
-        <thead>
-            <tr>
-                <th>Profile & Contact</th>
-                <th>Type</th>
-                <th>Status</th>
-                <th>Block Info</th>
-                <th>Master Actions</th>
-            </tr>
-        </thead>
-        <tbody id="userList"></tbody>
-    </table>
+
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Role</th>
+<th>Status</th>
+<th>Block</th>
+<th>Action</th>
+</tr>
+</thead>
+
+<tbody id="userList"></tbody>
+
+</table>
+
 </div>
 
+</div>
+
+
 <script>
-    // --- FIREBASE CONFIG (SAME AS YOURS) ---
-    const firebaseConfig = {
-      apiKey: "AIzaSyA8O4kOinBczBQ8r9mbtOdH98X70ezpgYk",
-      authDomain: "new-prototype-s7zo4.firebaseapp.com",
-      projectId: "new-prototype-s7zo4",
-      storageBucket: "new-prototype-s7zo4.firebasestorage.app",
-      messagingSenderId: "406938721232",
-      appId: "1:406938721232:web:abfd93d796d2d37c5af7d5"
-    };
 
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const db = firebase.firestore();
+/* FIREBASE */
+const firebaseConfig = {
+apiKey: "AIzaSyA8O4kOinBczBQ8r9mbtOdH98X70ezpgYk",
+authDomain: "new-prototype-s7zo4.firebaseapp.com",
+projectId: "new-prototype-s7zo4",
+storageBucket: "new-prototype-s7zo4.firebasestorage.app",
+messagingSenderId: "406938721232",
+appId: "1:406938721232:web:abfd93d796d2d37c5af7d5"
+};
 
-    // Force Add Function
-    async function forceAddUser() {
-        const name = document.getElementById('addName').value;
-        const email = document.getElementById('addEmail').value;
-        const pass = document.getElementById('addPass').value;
-        const phone = document.getElementById('addPhone').value;
-        const role = document.getElementById('addRole').value;
+firebase.initializeApp(firebaseConfig);
 
-        if(!name || !email || !pass || !phone) return alert("All fields are required!");
+const auth = firebase.auth();
+const db = firebase.firestore();
 
-        try {
-            const userCredential = await auth.createUserWithEmailAndPassword(email, pass);
-            const uid = userCredential.user.uid;
 
-            await db.collection("Users").doc(uid).set({
-                name, email, phone, role,
-                status: 'Active',
-                timestamp: firebase.firestore.FieldValue.serverTimestamp()
-            });
+/* LOGIN */
+function adminLogin(){
 
-            alert(`${name} has been added as a FREE ${role}!`);
-            loadUsers();
-        } catch (e) { alert(e.message); }
-    }
+let email=adminEmail.value;
+let pass=adminPass.value;
 
-    async function loadUsers() {
-        const snapshot = await db.collection("Users").get();
-        const list = document.getElementById('userList');
-        let p = 0, c = 0;
-        list.innerHTML = "";
-        
-        snapshot.forEach(doc => {
-            const data = doc.data();
-            const id = doc.id;
-            const expiry = data.blockUntil ? new Date(data.blockUntil.seconds * 1000).toLocaleString() : 'Active';
-            if(data.role === 'partner') p++; else c++;
+auth.signInWithEmailAndPassword(email,pass)
+.then(()=>{
 
-            list.innerHTML += `
-                <tr>
-                    <td>
-                        <div style="display:flex; align-items:center; gap:12px;">
-                            <img src="${data.photoUrl || 'https://via.placeholder.com/150'}" class="user-img">
-                            <div>
-                                <b style="font-size:14px;">${data.name}</b><br>
-                                <small style="color:#666;">${data.phone} | ${data.email}</small>
-                            </div>
-                        </div>
-                    </td>
-                    <td><span class="role-badge role-${data.role}">${data.role.toUpperCase()}</span></td>
-                    <td style="font-weight:bold; color:${data.status === 'Blocked' ? 'var(--red)' : 'var(--green)'}">${data.status}</td>
-                    <td><small>${expiry}</small></td>
-                    <td>
-                        <button class="btn btn-block" onclick="blockUser('${id}')">BLOCK</button>
-                        <button class="btn btn-unblock" onclick="unblockUser('${id}')">UNBLOCK</button>
-                        <button class="btn btn-delete" onclick="deleteUser('${id}')"><i class="fa-solid fa-trash"></i></button>
-                    </td>
-                </tr>
-            `;
-        });
-        document.getElementById('countAll').innerText = (p+c);
-        document.getElementById('countPartner').innerText = p;
-        document.getElementById('countCitizen').innerText = c;
-    }
+loginBox.style.display="none";
+adminPanel.style.display="block";
 
-    // Previous Block, Unblock, Delete functions remain same...
-    async function blockUser(id) {
-        let days = prompt("Kitne dinon ke liye block karna hai?");
-        if(!days) return;
-        let date = new Date(); date.setDate(date.getDate() + parseInt(days));
-        await db.collection("Users").doc(id).update({ status: 'Blocked', blockUntil: date });
-        loadUsers();
-    }
+loadUsers();
 
-    async function unblockUser(id) {
-        await db.collection("Users").doc(id).update({ status: 'Active', blockUntil: null });
-        loadUsers();
-    }
+})
+.catch(()=>{
+loginMsg.innerText="Wrong Email / Password";
+});
 
-    async function deleteUser(id) {
-        if(confirm("Confirm Delete?")) { await db.collection("Users").doc(id).delete(); loadUsers(); }
-    }
+}
 
-    loadUsers();
+function logout(){
+auth.signOut();
+location.reload();
+}
+
+
+auth.onAuthStateChanged(user=>{
+
+if(user){
+loginBox.style.display="none";
+adminPanel.style.display="block";
+loadUsers();
+}
+
+});
+
+
+/* ADD USER */
+async function forceAddUser(){
+
+let name=addName.value;
+let email=addEmail.value;
+let pass=addPass.value;
+let phone=addPhone.value;
+let role=addRole.value;
+
+if(!name||!email||!pass||!phone){
+alert("Fill all fields");
+return;
+}
+
+try{
+
+let user=await auth.createUserWithEmailAndPassword(email,pass);
+
+await db.collection("Users").doc(user.user.uid).set({
+
+name,email,phone,role,
+status:"Active",
+time:firebase.firestore.FieldValue.serverTimestamp()
+
+});
+
+alert("User Added");
+
+loadUsers();
+
+}catch(e){
+alert(e.message);
+}
+
+}
+
+
+/* LOAD USERS */
+async function loadUsers(){
+
+let snap=await db.collection("Users").get();
+
+userList.innerHTML="";
+
+let p=0,c=0;
+
+snap.forEach(doc=>{
+
+let d=doc.data();
+
+if(d.role=="partner")p++;
+else c++;
+
+userList.innerHTML+=`
+
+<tr>
+
+<td>${d.name}<br><small>${d.phone}</small></td>
+
+<td>${d.role}</td>
+
+<td>${d.status}</td>
+
+<td>${d.blockUntil?new Date(d.blockUntil.seconds*1000).toLocaleDateString():"-"}</td>
+
+<td>
+
+<button class="btn btn-block" onclick="blockUser('${doc.id}')">Block</button>
+
+<button class="btn btn-unblock" onclick="unblockUser('${doc.id}')">Unblock</button>
+
+<button class="btn btn-delete" onclick="deleteUser('${doc.id}')">Delete</button>
+
+</td>
+
+</tr>
+
+`;
+
+});
+
+countAll.innerText=p+c;
+countPartner.innerText=p;
+countCitizen.innerText=c;
+
+}
+
+
+/* ACTIONS */
+
+async function blockUser(id){
+
+let d=prompt("Days to block?");
+
+if(!d)return;
+
+let dt=new Date();
+dt.setDate(dt.getDate()+parseInt(d));
+
+await db.collection("Users").doc(id).update({
+
+status:"Blocked",
+blockUntil:dt
+
+});
+
+loadUsers();
+
+}
+
+async function unblockUser(id){
+
+await db.collection("Users").doc(id).update({
+
+status:"Active",
+blockUntil:null
+
+});
+
+loadUsers();
+
+}
+
+async function deleteUser(id){
+
+if(confirm("Delete User?")){
+
+await db.collection("Users").doc(id).delete();
+loadUsers();
+
+}
+
+}
+
 </script>
+
 </body>
 </html>
