@@ -6,26 +6,60 @@
 <title>Aftab Local Store</title>
 
 <style>
-body{font-family:Arial;margin:0;background:#f2f2f2}
+body{
+font-family:Arial;
+margin:0;
+background:#eef2f3;
+}
 
 header{
-background:#28a745;
+background:linear-gradient(45deg,#28a745,#20c997);
 color:white;
-padding:15px;
+padding:18px;
 text-align:center;
-font-size:20px;
+font-size:22px;
+font-weight:bold;
+}
+
+.container{
+padding:10px;
+max-width:500px;
+margin:auto;
+}
+
+.card{
+background:white;
+margin:10px 0;
+padding:15px;
+border-radius:12px;
+box-shadow:0 2px 5px rgba(0,0,0,0.1);
+}
+
+h3{
+margin:10px 0;
+color:#333;
 }
 
 .product{
-background:white;
-margin:10px;
-padding:15px;
-border-radius:10px;
+display:flex;
+justify-content:space-between;
+align-items:center;
+margin:8px 0;
 }
 
 .qty{
-width:60px;
+width:55px;
 padding:5px;
+border-radius:6px;
+border:1px solid #ccc;
+}
+
+input,textarea{
+width:100%;
+padding:8px;
+margin:5px 0 10px;
+border-radius:6px;
+border:1px solid #ccc;
 }
 
 .orderBtn{
@@ -33,10 +67,15 @@ background:#25D366;
 color:white;
 border:none;
 width:100%;
-padding:12px;
-font-size:16px;
-border-radius:6px;
-margin:20px 0;
+padding:14px;
+font-size:17px;
+border-radius:8px;
+margin-top:15px;
+cursor:pointer;
+}
+
+.orderBtn:hover{
+opacity:0.9;
 }
 </style>
 </head>
@@ -45,48 +84,77 @@ margin:20px 0;
 
 <header>🛒 Aftab Grocery Store</header>
 
-<h3 style="padding-left:10px">🥛 Milk</h3>
+<div class="container">
+
+<!-- Customer Details -->
+<div class="card">
+<h3>👤 Customer Details</h3>
+
+<input id="name" placeholder="Your Name">
+
+<input id="mobile" type="number" placeholder="Mobile Number">
+
+<textarea id="address" placeholder="Delivery Address"></textarea>
+</div>
+
+
+<!-- Products -->
+<div class="card">
+
+<h3>🥛 Milk</h3>
 
 <div class="product">
-Milk 1L - ₹60
+<span>Milk 1L - ₹60</span>
 <input class="qty" id="m1" type="number" value="0">
 </div>
 
-<h3 style="padding-left:10px">🥦 Grocery</h3>
+<h3>🥦 Grocery</h3>
 
 <div class="product">
-Rice 1Kg - ₹50
+<span>Rice 1Kg - ₹50</span>
 <input class="qty" id="r1" type="number" value="0">
 </div>
 
 <div class="product">
-Bread - ₹40
+<span>Bread - ₹40</span>
 <input class="qty" id="b1" type="number" value="0">
 </div>
 
 <div class="product">
-Vegetables Pack - ₹100
+<span>Vegetables Pack - ₹100</span>
 <input class="qty" id="v1" type="number" value="0">
 </div>
 
-<h3 style="padding-left:10px">🍔 Food</h3>
+<h3>🍔 Food</h3>
 
 <div class="product">
-Burger - ₹80
+<span>Burger - ₹80</span>
 <input class="qty" id="f1" type="number" value="0">
 </div>
 
 <div class="product">
-Samosa (2pc) - ₹30
+<span>Samosa (2pc) - ₹30</span>
 <input class="qty" id="f2" type="number" value="0">
 </div>
 
+</div>
 
 <button class="orderBtn" onclick="sendOrder()">📲 Order on WhatsApp</button>
+
+</div>
 
 
 <script>
 function sendOrder(){
+
+let name=document.getElementById("name").value;
+let mobile=document.getElementById("mobile").value;
+let address=document.getElementById("address").value;
+
+if(name=="" || mobile=="" || address==""){
+alert("Please fill all details");
+return;
+}
 
 let items="";
 let total=0;
@@ -105,11 +173,36 @@ list.forEach(i=>{
 let qty=document.getElementById(i[2]).value;
 
 if(qty>0){
-
 items+=i[0]+" x "+qty+"%0A";
 total+=i[1]*qty;
+}
+
+});
+
+if(items==""){
+alert("Please select items");
+return;
+}
+
+let msg=
+"🛒 *New Order* %0A%0A"+
+"👤 Name: "+name+"%0A"+
+"📱 Mobile: "+mobile+"%0A"+
+"🏠 Address: "+address+"%0A%0A"+
+"📦 Items:%0A"+
+items+
+"%0A💰 Total: ₹"+total+
+"%0A💵 Payment: Cash on Delivery";
+
+let phone="919336678937"; // 👉 Yahan apna number daalo
+
+window.open("https://wa.me/"+phone+"?text="+msg);
 
 }
+</script>
+
+</body>
+</html>}
 
 });
 
