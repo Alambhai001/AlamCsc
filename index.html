@@ -3,9 +3,18 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Aftab Local Store</title>
+
+<title>Aftab Store App</title>
+
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon.png">
+
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
 
 <style>
+
 body{
 font-family:Arial;
 margin:0;
@@ -13,293 +22,84 @@ background:#eef2f3;
 }
 
 header{
-background:linear-gradient(45deg,#28a745,#20c997);
+background:#28a745;
 color:white;
-padding:18px;
-text-align:center;
-font-size:22px;
-font-weight:bold;
-}
-
-.container{
-padding:10px;
-max-width:500px;
-margin:auto;
-}
-
-.card{
-background:white;
-margin:10px 0;
 padding:15px;
-border-radius:12px;
-box-shadow:0 2px 5px rgba(0,0,0,0.1);
+text-align:center;
+font-size:20px;
 }
 
-h3{
-margin:10px 0;
-color:#333;
+.box{
+background:white;
+margin:12px;
+padding:15px;
+border-radius:10px;
 }
 
-.product{
-display:flex;
-justify-content:space-between;
-align-items:center;
-margin:8px 0;
-}
-
-.qty{
-width:55px;
-padding:5px;
-border-radius:6px;
-border:1px solid #ccc;
-}
-
-input,textarea{
+input,textarea,button{
 width:100%;
-padding:8px;
-margin:5px 0 10px;
-border-radius:6px;
-border:1px solid #ccc;
+padding:10px;
+margin:5px 0;
 }
 
-.orderBtn{
-background:#25D366;
+button{
+background:#28a745;
 color:white;
 border:none;
-width:100%;
-padding:14px;
-font-size:17px;
-border-radius:8px;
-margin-top:15px;
-cursor:pointer;
+border-radius:6px;
 }
 
-.orderBtn:hover{
-opacity:0.9;
-}
 </style>
 </head>
 
 <body>
 
-<header>🛒 Aftab Grocery Store</header>
+<header>🛒 Aftab Store</header>
 
-<div class="container">
+<!-- LOGIN -->
+<div id="loginBox" class="box">
 
-<!-- Customer Details -->
-<div class="card">
-<h3>👤 Customer Details</h3>
+<h3>Login</h3>
 
-<input id="name" placeholder="Your Name">
+<input id="email" placeholder="Email">
+<input id="pass" type="password" placeholder="Password">
 
-<input id="mobile" type="number" placeholder="Mobile Number">
+<button onclick="login()">Login</button>
 
-<textarea id="address" placeholder="Delivery Address"></textarea>
-</div>
-
-
-<!-- Products -->
-<div class="card">
-
-<h3>🥛 Milk</h3>
-
-<div class="product">
-<span>Milk 1L - ₹60</span>
-<input class="qty" id="m1" type="number" value="0">
-</div>
-
-<h3>🥦 Grocery</h3>
-
-<div class="product">
-<span>Rice 1Kg - ₹50</span>
-<input class="qty" id="r1" type="number" value="0">
-</div>
-
-<div class="product">
-<span>Bread - ₹40</span>
-<input class="qty" id="b1" type="number" value="0">
-</div>
-
-<div class="product">
-<span>Vegetables Pack - ₹100</span>
-<input class="qty" id="v1" type="number" value="0">
-</div>
-
-<h3>🍔 Food</h3>
-
-<div class="product">
-<span>Burger - ₹80</span>
-<input class="qty" id="f1" type="number" value="0">
-</div>
-
-<div class="product">
-<span>Samosa (2pc) - ₹30</span>
-<input class="qty" id="f2" type="number" value="0">
-</div>
-
-</div>
-
-<button class="orderBtn" onclick="sendOrder()">📲 Order on WhatsApp</button>
+<p id="msg"></p>
 
 </div>
 
 
-<script>
-function sendOrder(){
+<!-- STORE -->
+<div id="storeBox" class="box" style="display:none">
 
-let name=document.getElementById("name").value;
-let mobile=document.getElementById("mobile").value;
-let address=document.getElementById("address").value;
+<h3>Order</h3>
 
-if(name=="" || mobile=="" || address==""){
-alert("Please fill all details");
-return;
-}
+<input id="name" placeholder="Name">
+<input id="mobile" placeholder="Mobile">
+<textarea id="address" placeholder="Address"></textarea>
 
-let items="";
-let total=0;
+<hr>
 
-let list=[
-["Milk 1L",60,"m1"],
-["Rice 1Kg",50,"r1"],
-["Bread",40,"b1"],
-["Vegetables",100,"v1"],
-["Burger",80,"f1"],
-["Samosa",30,"f2"]
-];
+Milk (₹60)
+<input id="m1" type="number" value="0">
 
-list.forEach(i=>{
+Rice (₹50)
+<input id="r1" type="number" value="0">
 
-let qty=document.getElementById(i[2]).value;
+<br><br>
 
-if(qty>0){
-items+=i[0]+" x "+qty+"%0A";
-total+=i[1]*qty;
-}
+<button onclick="sendOrder()">Order on WhatsApp</button>
 
-});
-
-if(items==""){
-alert("Please select items");
-return;
-}
-
-let msg=
-"🛒 *New Order* %0A%0A"+
-"👤 Name: "+name+"%0A"+
-"📱 Mobile: "+mobile+"%0A"+
-"🏠 Address: "+address+"%0A%0A"+
-"📦 Items:%0A"+
-items+
-"%0A💰 Total: ₹"+total+
-"%0A💵 Payment: Cash on Delivery";
-
-let phone="919336678937"; // 👉 Yahan apna number daalo
-
-window.open("https://wa.me/"+phone+"?text="+msg);
-
-}
-</script>
-
-</body>
-</html>}
-
-});
-
-if(items==""){
-alert("Please select items");
-return;
-}
-
-let msg=
-"Hello Aftab Store,%0A%0A"+
-"My Order:%0A"+
-items+
-"%0ATotal: ₹"+total+
-"%0APayment: Cash";
-
-let phone="91XXXXXXXXXX"; // <-- Apna number yahan daalo
-
-window.open("https://wa.me/"+phone+"?text="+msg);
-
-}
-</script>
-
-</body>
-</html><!-- HOME -->
-<div id="home" class="page">
-
-<div class="card">
-<h3>Welcome</h3>
-<p id="username"></p>
-</div>
-
-<div class="card">
-<h3>Feed</h3>
-<p>Posts yahan dikhenge...</p>
-</div>
-
-</div>
-
-
-<!-- POST -->
-<div id="post" class="page">
-
-<div class="card">
-<h3>Create Post</h3>
-
-<input type="file">
-<input placeholder="Caption">
-
-<button>Post</button>
-</div>
-
-</div>
-
-
-<!-- CHAT -->
-<div id="chat" class="page">
-
-<div class="card">
-<h3>Chat</h3>
-
-<input placeholder="Message">
-<button>Send</button>
-
-<p>(Next step me real chat add hoga)</p>
-</div>
-
-</div>
-
-
-<!-- PROFILE -->
-<div id="profile" class="page">
-
-<div class="card">
-<h3>Profile</h3>
-
-<p id="pname"></p>
-
-<button class="logout" onclick="logout()">Logout</button>
-</div>
-
-</div>
-
-
-<!-- TABS -->
-<div class="tabs" id="tabs" style="display:none">
-
-<button class="activeTab" onclick="openTab('home',this)">🏠 Home</button>
-<button onclick="openTab('post',this)">➕ Post</button>
-<button onclick="openTab('chat',this)">💬 Chat</button>
-<button onclick="openTab('profile',this)">👤 Profile</button>
+<button onclick="logout()" style="background:red">Logout</button>
 
 </div>
 
 
 <script>
 
-// Firebase Config (Aapka)
+// FIREBASE
 firebase.initializeApp({
 apiKey: "AIzaSyA8O4kOinBczBQ8r9mbtOdH98X70ezpgYk",
 authDomain: "new-prototype-s7zo4.firebaseapp.com",
@@ -309,154 +109,60 @@ projectId: "new-prototype-s7zo4"
 const auth=firebase.auth();
 const db=firebase.firestore();
 
-function show(id){
-document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-document.getElementById(id).classList.add('active');
+
+// LOGIN
+async function login(){
+
+let email=document.getElementById("email").value;
+let pass=document.getElementById("pass").value;
+
+try{
+
+await auth.signInWithEmailAndPassword(email,pass);
+
+document.getElementById("loginBox").style.display="none";
+document.getElementById("storeBox").style.display="block";
+
+}catch{
+document.getElementById("msg").innerText="Wrong Login";
 }
 
-function openTab(id,btn){
-
-document.querySelectorAll('.page').forEach(p=>{
-if(p.id!='login' && p.id!='signup')
-p.classList.remove('active');
-});
-
-document.getElementById(id).classList.add('active');
-
-document.querySelectorAll('.tabs button')
-.forEach(b=>b.classList.remove('activeTab'));
-
-btn.classList.add('activeTab');
-}
-
-
-// Signup
-function signup(){
-
-let name=document.getElementById('name').value;
-let email=document.getElementById('semail').value;
-let pass=document.getElementById('spass').value;
-
-auth.createUserWithEmailAndPassword(email,pass)
-.then(res=>{
-
-db.collection("Users").doc(res.user.uid).set({
-name:name,email:email
-});
-
-alert("Account Created");
-show('login');
-
-}).catch(e=>alert(e.message));
 }
 
 
-// Login
-function login(){
-
-let email=document.getElementById('email').value;
-let pass=document.getElementById('pass').value;
-
-auth.signInWithEmailAndPassword(email,pass)
-.then(res=>{
-
-db.collection("Users").doc(res.user.uid).get()
-.then(doc=>{
-
-let data=doc.data();
-
-document.getElementById('username').innerText=
-"Hello "+data.name;
-
-document.getElementById('pname').innerText=
-"Name: "+data.name;
-
-show('home');
-
-document.getElementById('tabs').style.display="flex";
-
-});
-
-}).catch(e=>alert(e.message));
-}
-
-
-// Logout
+// LOGOUT
 function logout(){
+
 auth.signOut();
-show('login');
-document.getElementById('tabs').style.display="none";
+
+document.getElementById("loginBox").style.display="block";
+document.getElementById("storeBox").style.display="none";
+
+}
+
+
+// ORDER
+function sendOrder(){
+
+let name=name=document.getElementById("name").value;
+let mobile=document.getElementById("mobile").value;
+let address=document.getElementById("address").value;
+
+let m1=document.getElementById("m1").value;
+let r1=document.getElementById("r1").value;
+
+let msg="New Order%0A"+
+"Name:"+name+"%0A"+
+"Mobile:"+mobile+"%0A"+
+"Address:"+address+"%0A%0A"+
+"Milk:"+m1+"%0A"+
+"Rice:"+r1;
+
+window.open("https://wa.me/919336678937?text="+msg);
+
 }
 
 </script>
 
-</body>
-</html>        appId: "1:406938721232:web:abfd93d796d2d37c5af7d5"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const db = firebase.firestore();
-
-    function navigateTo(id) {
-        document.querySelectorAll('.page').forEach(p => p.classList.remove('active-page'));
-        document.getElementById(id).classList.add('active-page');
-        window.scrollTo(0,0);
-    }
-
-    // --- SMART SIGNUP WITH AUTO-REDIRECT ---
-    async function handleSignup() {
-        const name = document.getElementById('regName').value;
-        const age = document.getElementById('regAge').value;
-        const phone = document.getElementById('regPhone').value;
-        const email = document.getElementById('regEmail').value;
-        const height = document.getElementById('regHeight').value;
-        const gender = document.getElementById('regGender').value;
-        const pass = document.getElementById('regPass').value;
-        const role = document.getElementById('regRole').value; // Rent ya Normal
-
-        if(!email || !pass || !name || !phone || !gender) {
-            return alert("Puri details bhariye!");
-        }
-
-        try {
-            const userCredential = await auth.createUserWithEmailAndPassword(email, pass);
-            const uid = userCredential.user.uid;
-
-            await db.collection("Users").doc(uid).set({
-                name, age, phone, email, height, gender,
-                role: role,
-                status: 'Active',
-                timestamp: firebase.firestore.FieldValue.serverTimestamp()
-            });
-
-            // Success Animation & Redirect
-            document.getElementById('successOverlay').style.display = 'flex';
-            
-            setTimeout(() => {
-                document.getElementById('successOverlay').style.display = 'none';
-                navigateTo('loginPage');
-            }, 2500); // 2.5 second baad login page par
-
-        } catch(e) { alert("Registration Error: " + e.message); }
-    }
-
-    async function handleLogin() {
-        const email = document.getElementById('loginEmail').value;
-        const pass = document.getElementById('loginPass').value;
-        try {
-            const userCred = await auth.signInWithEmailAndPassword(email, pass);
-            const doc = await db.collection("Users").doc(userCred.user.uid).get();
-            const data = doc.data();
-
-            if(data.status === 'Blocked') {
-                alert("Account Blocked: " + data.blockMessage);
-                auth.signOut();
-                return;
-            }
-            alert("Welcome back, " + data.name + "!");
-            // Yahan se dashboard khulega
-        } catch(e) { alert("Login Error: " + e.message); }
-    }
-</script>
 </body>
 </html>
