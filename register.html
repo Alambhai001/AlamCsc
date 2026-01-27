@@ -4,6 +4,7 @@
 <title>Mumbai Elite | Register</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
+<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
@@ -20,7 +21,6 @@ height:100vh;
 margin:0;
 }
 
-/* BOX */
 .box{
 background:white;
 width:320px;
@@ -32,7 +32,6 @@ box-shadow:0 10px 25px rgba(0,0,0,0.3);
 
 h2{margin-bottom:15px}
 
-/* INPUT */
 input,select{
 width:100%;
 padding:12px;
@@ -42,7 +41,6 @@ border:1px solid #ccc;
 font-size:14px;
 }
 
-/* BUTTON */
 button{
 width:100%;
 padding:12px;
@@ -59,14 +57,13 @@ button:disabled{
 background:#999;
 }
 
-/* MSG */
 #msg{
 margin-top:10px;
 font-size:13px;
 color:red;
+min-height:18px;
 }
 
-/* LINK */
 a{
 display:block;
 margin-top:12px;
@@ -112,14 +109,12 @@ color:green;
 
 <script>
 
-/* FIREBASE */
-const firebaseConfig = {
+/* FIREBASE CONFIG */
+firebase.initializeApp({
 apiKey: "AIzaSyA8O4kOinBczBQ8r9mbtOdH98X70ezpgYk",
 authDomain: "new-prototype-s7zo4.firebaseapp.com",
 projectId: "new-prototype-s7zo4"
-};
-
-firebase.initializeApp(firebaseConfig);
+});
 
 const auth = firebase.auth();
 const db = firebase.firestore();
@@ -128,48 +123,60 @@ const db = firebase.firestore();
 /* REGISTER */
 async function register(){
 
-let name=document.getElementById("name").value.trim();
-let email=document.getElementById("email").value.trim();
-let pass=document.getElementById("password").value;
-let phone=document.getElementById("phone").value.trim();
-let role=document.getElementById("role").value;
+let name = document.getElementById("name").value.trim();
+let email = document.getElementById("email").value.trim();
+let pass = document.getElementById("password").value;
+let phone = document.getElementById("phone").value.trim();
+let role = document.getElementById("role").value;
 
-if(!name||!email||!pass||!phone){
-msg("Fill all fields");
+if(!name || !email || !pass || !phone){
+showMsg("Fill all fields ❌");
 return;
 }
 
-if(pass.length<6){
-msg("Password must be 6+ characters");
+if(pass.length < 6){
+showMsg("Password must be 6+ characters");
 return;
 }
 
-regBtn.disabled=true;
-msg("<span class='loading'>Creating account...</span>");
+regBtn.disabled = true;
+showMsg("Creating account... ⏳", true);
 
 try{
 
-let cred=await auth.createUserWithEmailAndPassword(email,pass);
+let cred = await auth.createUserWithEmailAndPassword(email, pass);
 
 await db.collection("Users").doc(cred.user.uid).set({
 
-name:name,
-email:email,
-phone:phone,
-role:role,
-status:"Active",
-created:firebase.firestore.FieldValue.serverTimestamp()
+name: name,
+email: email,
+phone: phone,
+role: role,
+status: "Active",
+created: firebase.firestore.FieldValue.serverTimestamp()
 
 });
 
-alert("Registration Successful ✅");
+// Logout after register (force fresh login)
+await auth.signOut();
 
-location="login.html";
+alert("Account Created Successfully ✅");
+
+location = "login.html";
 
 }catch(e){
 
-msg(e.message);
-regBtn.disabled=false;
+if(e.code === "auth/email-already-in-use"){
+showMsg("Email already registered ❌");
+}
+else if(e.code === "auth/invalid-email"){
+showMsg("Invalid Email ❌");
+}
+else{
+showMsg("Error: " + e.message);
+}
+
+regBtn.disabled = false;
 
 }
 
@@ -177,8 +184,14 @@ regBtn.disabled=false;
 
 
 /* MESSAGE */
-function msg(t){
-document.getElementById("msg").innerHTML=t;
+function showMsg(text,loading=false){
+
+let el = document.getElementById("msg");
+
+el.innerHTML = loading
+? "<span class='loading'>"+text+"</span>"
+: text;
+
 }
 
 </script>
