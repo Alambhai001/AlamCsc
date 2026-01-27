@@ -2,76 +2,124 @@
 <html>
 <head>
 <title>Admin Panel | Aftab Store</title>
+
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
+<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
 
 <style>
-body{font-family:Arial;margin:0;background:#111;color:#fff}
 
+body{
+font-family:Arial;
+margin:0;
+background:#111;
+color:#fff;
+}
+
+/* BOX */
 .box{
+width:100%;
 max-width:500px;
-margin:20px auto;
+min-height:100vh;
+margin:auto;
 background:#fff;
 color:#000;
 padding:15px;
-border-radius:10px;
+box-sizing:border-box;
 }
 
+/* INPUT */
 input,button{
 width:100%;
-padding:10px;
-margin:5px 0;
+padding:12px;
+margin:6px 0;
+border-radius:6px;
+border:1px solid #ccc;
+font-size:15px;
 }
 
+/* BUTTON */
 button{
 background:#28a745;
 color:white;
 border:none;
-border-radius:6px;
+cursor:pointer;
+font-weight:bold;
 }
 
+button:hover{opacity:.9}
+
 .red{background:red}
+
+/* LIST */
+.item{
+border:1px solid #ddd;
+padding:8px;
+margin:6px 0;
+border-radius:6px;
+display:flex;
+justify-content:space-between;
+align-items:center;
+font-size:14px;
+}
+
+.orderBox{
+border:1px solid #ccc;
+padding:8px;
+margin:8px 0;
+border-radius:6px;
+font-size:13px;
+}
+
 </style>
 </head>
 
 <body>
 
+<!-- LOGIN -->
 <div class="box" id="loginBox">
 
-<h3>🔐 Admin Login</h3>
+<h2>🔐 Admin Login</h2>
 
 <input id="email" placeholder="Email">
-<input id="pass" type="password">
+<input id="pass" type="password" placeholder="Password">
 
 <button onclick="login()">Login</button>
 
-<p id="msg"></p>
+<p id="msg" style="color:red"></p>
 
 </div>
 
 
+<!-- PANEL -->
 <div class="box" id="panel" style="display:none">
 
-<h3>📦 Add Product</h3>
+<h2>📦 Admin Dashboard</h2>
+
+<hr>
+
+<h3>Add Product</h3>
 
 <input id="pname" placeholder="Product Name">
-<input id="price" placeholder="Price">
-<input id="stock" placeholder="Stock">
+<input id="price" type="number" placeholder="Price ₹">
+<input id="stock" type="number" placeholder="Stock">
 
-<button onclick="addProduct()">Add</button>
-
-<hr>
-
-<h3>🛒 Products</h3>
-<div id="products"></div>
+<button onclick="addProduct()">➕ Add</button>
 
 <hr>
 
-<h3>📬 Orders</h3>
-<div id="orders"></div>
+<h3>Products</h3>
+<div id="products">Loading...</div>
+
+<hr>
+
+<h3>Orders</h3>
+<div id="orders">Loading...</div>
+
+<hr>
 
 <button class="red" onclick="logout()">Logout</button>
 
@@ -80,24 +128,63 @@ border-radius:6px;
 
 <script>
 
-// FIREBASE
+/* FIREBASE CONFIG */
 firebase.initializeApp({
 apiKey: "AIzaSyA8O4kOinBczBQ8r9mbtOdH98X70ezpgYk",
 authDomain: "new-prototype-s7zo4.firebaseapp.com",
 projectId: "new-prototype-s7zo4"
 });
 
-const auth=firebase.auth();
-const db=firebase.firestore();
+const auth = firebase.auth();
+const db = firebase.firestore();
 
 
-// LOGIN
+/* AUTO LOGIN */
+auth.onAuthStateChanged(async user=>{
+
+if(!user) return;
+
+let doc = await db.collection("Users").doc(user.uid).get();
+
+if(!doc.exists || doc.data().role!=="admin"){
+
+alert("Not Admin ❌");
+auth.signOut();
+return;
+
+}
+
+loginBox.style.display="none";
+panel.style.display="block";
+
+loadProducts();
+loadOrders();
+
+});
+
+
+/* LOGIN */
 async function login(){
 
+msg.innerText="";
+
 try{
-await auth.signInWithEmailAndPassword(
-email.value,pass.value
+
+let cred = await auth.signInWithEmailAndPassword(
+email.value.trim(),
+pass.value.trim()
 );
+
+let doc = await db.collection("Users")
+.doc(cred.user.uid).get();
+
+if(!doc.exists || doc.data().role!=="admin"){
+
+msg.innerText="Not Admin Account ❌";
+auth.signOut();
+return;
+
+}
 
 loginBox.style.display="none";
 panel.style.display="block";
@@ -106,28 +193,36 @@ loadProducts();
 loadOrders();
 
 }catch{
-msg.innerText="Wrong Login";
-}
+
+msg.innerText="Wrong Email / Password";
 
 }
 
+}
 
-// LOGOUT
+
+/* LOGOUT */
 function logout(){
+
 auth.signOut();
 location.reload();
+
 }
 
 
-// ADD PRODUCT
+/* ADD PRODUCT */
 async function addProduct(){
 
-if(!pname.value||!price.value)return alert("Fill all");
+if(!pname.value||!price.value||!stock.value)
+return alert("Fill All Fields");
 
 await db.collection("Products").add({
+
 name:pname.value,
-price:price.value,
-stock:stock.value
+price:Number(price.value),
+stock:Number(stock.value),
+time:firebase.firestore.FieldValue.serverTimestamp()
+
 });
 
 pname.value="";
@@ -135,25 +230,42 @@ price.value="";
 stock.value="";
 
 loadProducts();
+
+alert("Product Added ✅");
+
 }
 
 
-// LOAD PRODUCTS
+/* LOAD PRODUCTS */
 async function loadProducts(){
 
-let snap=await db.collection("Products").get();
+let snap = await db.collection("Products")
+.orderBy("time","desc").get();
 
 products.innerHTML="";
 
+if(snap.empty){
+products.innerHTML="No Products";
+return;
+}
+
 snap.forEach(d=>{
 
-let p=d.data();
+let p = d.data();
 
 products.innerHTML+=`
-<div>
-${p.name} ₹${p.price} (Stock:${p.stock})
+
+<div class="item">
+
+<span>
+${p.name} ₹${p.price}
+(Stock:${p.stock})
+</span>
+
 <button onclick="del('${d.id}')">❌</button>
+
 </div>
+
 `;
 
 });
@@ -161,33 +273,49 @@ ${p.name} ₹${p.price} (Stock:${p.stock})
 }
 
 
-// DELETE
-function del(id){
-db.collection("Products").doc(id).delete();
+/* DELETE */
+async function del(id){
+
+if(!confirm("Delete Product?")) return;
+
+await db.collection("Products").doc(id).delete();
+
 loadProducts();
+
 }
 
 
-// LOAD ORDERS
+/* LOAD ORDERS */
 async function loadOrders(){
 
-let snap=await db.collection("Orders")
+let snap = await db.collection("Orders")
 .orderBy("time","desc").get();
 
 orders.innerHTML="";
+
+if(snap.empty){
+orders.innerHTML="No Orders";
+return;
+}
 
 snap.forEach(d=>{
 
 let o=d.data();
 
 orders.innerHTML+=`
-<div style="border:1px solid #ccc;padding:5px;margin:5px">
 
-<b>${o.name}</b> (${o.mobile})<br>
+<div class="orderBox">
+
+<b>${o.name}</b><br>
+📱 ${o.mobile}<br>
+🏠 ${o.address}<br><br>
+
 ${o.items}<br>
-₹${o.total}
+
+💰 ₹${o.total}
 
 </div>
+
 `;
 
 });
