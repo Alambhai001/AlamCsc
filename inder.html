@@ -1,7 +1,12 @@
 async function handleLogin() {
 
-  const email = document.getElementById('loginEmail').value;
-  const pass = document.getElementById('loginPass').value;
+  const email = document.getElementById('loginEmail').value.trim();
+  const pass = document.getElementById('loginPass').value.trim();
+
+  if(!email || !pass){
+    document.getElementById("msg").innerHTML="Fill all fields";
+    return;
+  }
 
   try {
 
@@ -11,19 +16,27 @@ async function handleLogin() {
                        .doc(userCred.user.uid)
                        .get();
 
-    const data = doc.data();
-
-    if(data.status === "Blocked"){
-      alert("Account Blocked!");
+    if(!doc.exists){
+      await auth.signOut();
+      document.getElementById("msg").innerHTML="Profile not found";
       return;
     }
 
-    // ❌ Alert hata diya
-    window.location.href = "inder.html"; // ✅ Direct open
+    const data = doc.data();
+
+    // 🚫 Block Check
+    if(data.status === "Blocked"){
+      await auth.signOut(); // logout
+      document.getElementById("msg").innerHTML="Account Blocked ❌";
+      return;
+    }
+
+    // ✅ Redirect
+    window.location.href = "dashboard.html";
 
   } catch(e) {
 
-    document.getElementById("msg").innerHTML = e.message;
+    document.getElementById("msg").innerHTML="Wrong Email or Password";
 
   }
 }
