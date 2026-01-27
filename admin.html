@@ -1,241 +1,86 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>Alam S | Admin Panel</title>
-
-<link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="icon.png">
+<title>Admin Panel | Aftab Store</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
 
 <style>
+body{font-family:Arial;margin:0;background:#111;color:#fff}
 
-:root{
---blue:#0072bc;
---green:#2e7d32;
---red:#d32f2f;
---orange:#f37021;
-}
-
-body{
-font-family:Arial;
-margin:0;
-background:#111;
-color:white;
-}
-
-/* LOGIN */
-
-#loginBox{
-max-width:350px;
-margin:120px auto;
-background:white;
-color:#333;
-padding:25px;
+.box{
+max-width:500px;
+margin:20px auto;
+background:#fff;
+color:#000;
+padding:15px;
 border-radius:10px;
-text-align:center;
 }
 
-#loginBox input{
+input,button{
 width:100%;
 padding:10px;
-margin:7px 0;
-}
-
-/* HEADER */
-
-.header{
-background:black;
-padding:15px;
-display:flex;
-justify-content:space-between;
-align-items:center;
-}
-
-/* STATS */
-
-.stats{
-display:grid;
-grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
-gap:10px;
-padding:15px;
-}
-
-.card{
-background:white;
-color:#333;
-padding:15px;
-border-radius:8px;
-text-align:center;
-}
-
-/* FORM */
-
-.form{
-background:white;
-color:#333;
-margin:15px;
-padding:15px;
-border-radius:8px;
-}
-
-.form input,.form select{
-width:100%;
-padding:8px;
 margin:5px 0;
 }
 
-.form button{
-background:var(--green);
+button{
+background:#28a745;
 color:white;
 border:none;
-padding:10px;
-width:100%;
+border-radius:6px;
 }
 
-/* TABLE */
-
-.tableBox{
-margin:15px;
-background:white;
-color:#333;
-border-radius:8px;
-overflow:auto;
-}
-
-table{
-width:100%;
-border-collapse:collapse;
-min-width:600px;
-}
-
-th,td{
-padding:10px;
-border-bottom:1px solid #eee;
-font-size:12px;
-}
-
-th{background:#f5f5f5}
-
-.btn{
-padding:5px 8px;
-font-size:11px;
-border:none;
-border-radius:4px;
-cursor:pointer;
-color:white;
-}
-
-.block{background:var(--orange)}
-.unblock{background:var(--green)}
-.del{background:var(--red)}
-
+.red{background:red}
 </style>
 </head>
 
 <body>
 
-<!-- LOGIN -->
-<div id="loginBox">
+<div class="box" id="loginBox">
 
-<h2>🔐 Admin Login</h2>
+<h3>🔐 Admin Login</h3>
 
 <input id="email" placeholder="Email">
-<input id="pass" type="password" placeholder="Password">
+<input id="pass" type="password">
 
-<button onclick="login()" style="width:100%;background:var(--blue);color:white;padding:10px;border:none">
-LOGIN
-</button>
+<button onclick="login()">Login</button>
 
-<p id="msg" style="color:red"></p>
+<p id="msg"></p>
 
 </div>
 
 
-<!-- PANEL -->
-<div id="panel" style="display:none">
+<div class="box" id="panel" style="display:none">
 
-<div class="header">
+<h3>📦 Add Product</h3>
 
-<h3>🏙️ Alam S Admin</h3>
+<input id="pname" placeholder="Product Name">
+<input id="price" placeholder="Price">
+<input id="stock" placeholder="Stock">
 
-<button onclick="logout()" class="btn del">Logout</button>
+<button onclick="addProduct()">Add</button>
 
-</div>
+<hr>
 
+<h3>🛒 Products</h3>
+<div id="products"></div>
 
-<!-- STATS -->
-<div class="stats">
+<hr>
 
-<div class="card">
-<b id="all">0</b><br>Total
-</div>
+<h3>📬 Orders</h3>
+<div id="orders"></div>
 
-<div class="card">
-<b id="partner">0</b><br>Partner
-</div>
-
-<div class="card">
-<b id="citizen">0</b><br>Citizen
-</div>
-
-</div>
-
-
-<!-- ADD USER -->
-<div class="form">
-
-<h4>Add User</h4>
-
-<input id="name" placeholder="Name">
-<input id="uemail" placeholder="Email">
-<input id="upass" type="password" placeholder="Password">
-<input id="phone" placeholder="Phone">
-
-<select id="role">
-<option value="citizen">Citizen</option>
-<option value="partner">Partner</option>
-</select>
-
-<button onclick="addUser()">Add User</button>
-
-</div>
-
-
-<!-- USERS -->
-<div class="tableBox">
-
-<table>
-
-<thead>
-<tr>
-<th>Name</th>
-<th>Phone</th>
-<th>Role</th>
-<th>Status</th>
-<th>Block</th>
-<th>Action</th>
-</tr>
-</thead>
-
-<tbody id="list"></tbody>
-
-</table>
-
-</div>
+<button class="red" onclick="logout()">Logout</button>
 
 </div>
 
 
 <script>
 
-/* FIREBASE CONFIG */
-
+// FIREBASE
 firebase.initializeApp({
 apiKey: "AIzaSyA8O4kOinBczBQ8r9mbtOdH98X70ezpgYk",
 authDomain: "new-prototype-s7zo4.firebaseapp.com",
@@ -245,221 +90,107 @@ projectId: "new-prototype-s7zo4"
 const auth=firebase.auth();
 const db=firebase.firestore();
 
-let adminEmail="";
-let adminPass="";
 
-
-/* AUTO LOGIN */
-
-auth.onAuthStateChanged(async user=>{
-
-if(user){
-
-let doc=await db.collection("Users").doc(user.uid).get();
-
-if(doc.exists && doc.data().role==="admin"){
-
-loginBox.style.display="none";
-panel.style.display="block";
-loadUsers();
-
-}else{
-
-auth.signOut();
-
-}
-
-}
-
-});
-
-
-/* LOGIN */
-
+// LOGIN
 async function login(){
 
-adminEmail=email.value.trim();
-adminPass=pass.value.trim();
-
 try{
-
-let res=await auth.signInWithEmailAndPassword(adminEmail,adminPass);
-
-let doc=await db.collection("Users").doc(res.user.uid).get();
-
-if(!doc.exists || doc.data().role!=="admin"){
-
-await auth.signOut();
-msg.innerText="Not Admin ❌";
-return;
-
-}
+await auth.signInWithEmailAndPassword(
+email.value,pass.value
+);
 
 loginBox.style.display="none";
 panel.style.display="block";
-loadUsers();
+
+loadProducts();
+loadOrders();
 
 }catch{
-
 msg.innerText="Wrong Login";
-
 }
 
 }
 
 
-/* LOGOUT */
-
+// LOGOUT
 function logout(){
-
 auth.signOut();
 location.reload();
-
 }
 
 
-/* ADD USER */
+// ADD PRODUCT
+async function addProduct(){
 
-async function addUser(){
+if(!pname.value||!price.value)return alert("Fill all");
 
-if(!adminEmail || !adminPass){
-alert("Re-login required");
-return;
-}
-
-let n=name.value;
-let e=uemail.value;
-let p=upass.value;
-let ph=phone.value;
-let r=role.value;
-
-if(!n||!e||!p||!ph){
-alert("Fill all");
-return;
-}
-
-try{
-
-let res=await auth.createUserWithEmailAndPassword(e,p);
-
-await db.collection("Users").doc(res.user.uid).set({
-
-name:n,
-email:e,
-phone:ph,
-role:r,
-status:"Active",
-time:firebase.firestore.FieldValue.serverTimestamp()
-
+await db.collection("Products").add({
+name:pname.value,
+price:price.value,
+stock:stock.value
 });
 
-await auth.signOut();
+pname.value="";
+price.value="";
+stock.value="";
 
-await auth.signInWithEmailAndPassword(adminEmail,adminPass);
-
-alert("User Added");
-loadUsers();
-
-}catch(e){
-
-alert(e.message);
-
-}
-
+loadProducts();
 }
 
 
-/* LOAD USERS */
+// LOAD PRODUCTS
+async function loadProducts(){
 
-async function loadUsers(){
+let snap=await db.collection("Products").get();
 
-let snap=await db.collection("Users").get();
+products.innerHTML="";
 
-list.innerHTML="";
+snap.forEach(d=>{
 
-let p=0,c=0;
+let p=d.data();
 
-snap.forEach(doc=>{
-
-let d=doc.data();
-
-if(d.role==="partner")p++;
-else if(d.role==="citizen")c++;
-
-list.innerHTML+=`
-
-<tr>
-
-<td>${d.name}</td>
-<td>${d.phone}</td>
-<td>${d.role}</td>
-<td>${d.status}</td>
-<td>${d.blockUntil?new Date(d.blockUntil.seconds*1000).toLocaleDateString():"-"}</td>
-
-<td>
-
-<button class="btn block" onclick="block('${doc.id}')">Block</button>
-<button class="btn unblock" onclick="unblock('${doc.id}')">Unblock</button>
-<button class="btn del" onclick="del('${doc.id}')">Delete</button>
-
-</td>
-
-</tr>
-
+products.innerHTML+=`
+<div>
+${p.name} ₹${p.price} (Stock:${p.stock})
+<button onclick="del('${d.id}')">❌</button>
+</div>
 `;
 
 });
 
-all.innerText=p+c;
-partner.innerText=p;
-citizen.innerText=c;
-
 }
 
 
-/* ACTIONS */
+// DELETE
+function del(id){
+db.collection("Products").doc(id).delete();
+loadProducts();
+}
 
-async function block(id){
 
-let d=prompt("Days?");
+// LOAD ORDERS
+async function loadOrders(){
 
-if(!d)return;
+let snap=await db.collection("Orders")
+.orderBy("time","desc").get();
 
-let dt=new Date();
-dt.setDate(dt.getDate()+parseInt(d));
+orders.innerHTML="";
 
-await db.collection("Users").doc(id).update({
+snap.forEach(d=>{
 
-status:"Blocked",
-blockUntil:dt
+let o=d.data();
+
+orders.innerHTML+=`
+<div style="border:1px solid #ccc;padding:5px;margin:5px">
+
+<b>${o.name}</b> (${o.mobile})<br>
+${o.items}<br>
+₹${o.total}
+
+</div>
+`;
 
 });
-
-loadUsers();
-
-}
-
-async function unblock(id){
-
-await db.collection("Users").doc(id).update({
-
-status:"Active",
-blockUntil:null
-
-});
-
-loadUsers();
-
-}
-
-async function del(id){
-
-if(confirm("Delete User?")){
-
-await db.collection("Users").doc(id).delete();
-loadUsers();
-
-}
 
 }
 
