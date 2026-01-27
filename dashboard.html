@@ -1,21 +1,27 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Mumbai Elite | Dashboard</title>
+<title>Aftab Store | Order</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="icon.png">
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
 
 <style>
+
 body{
-font-family:Arial;
-background:#eef2f5;
 margin:0;
+font-family:Arial;
+background:#eef2f3;
 }
 
+/* HEADER */
 header{
-background:#0072bc;
+background:#28a745;
 color:white;
 padding:15px;
 text-align:center;
@@ -23,259 +29,175 @@ font-size:20px;
 font-weight:bold;
 }
 
+/* BOX */
 .box{
 background:white;
-margin:12px;
+margin:10px;
 padding:15px;
-border-radius:12px;
-box-shadow:0 2px 6px rgba(0,0,0,0.1);
+border-radius:10px;
 }
 
-.profile{
-display:flex;
-align-items:center;
-gap:10px;
-}
-
-input,button{
-width:100%;
-padding:10px;
+.product{
+border:1px solid #ddd;
+padding:8px;
 margin:6px 0;
 border-radius:6px;
-border:1px solid #ccc;
+}
+
+.qty{
+width:60px;
+padding:5px;
+margin-top:5px;
 }
 
 button{
-background:#0072bc;
+width:100%;
+padding:12px;
+background:#28a745;
 color:white;
 border:none;
+border-radius:6px;
 font-weight:bold;
-cursor:pointer;
+margin-top:10px;
 }
 
 .logout{background:red}
 
-.post{
-border:1px solid #ddd;
-padding:10px;
-margin:12px 0;
-border-radius:10px;
-}
-
-.post img{
-width:100%;
-border-radius:8px;
-margin:5px 0;
-}
-
-.actions{
-display:flex;
-justify-content:space-between;
-margin-top:5px;
-}
-
-.like{color:#0072bc;cursor:pointer}
-.delete{color:red;cursor:pointer}
-
-.preview{
-width:100%;
-max-height:200px;
-object-fit:cover;
-border-radius:8px;
-display:none;
-}
 </style>
 </head>
 
 <body>
 
-<header>📸 Mumbai Elite Feed</header>
+<header>🛒 Aftab Store</header>
 
-<!-- PROFILE -->
+
+<!-- USER -->
 <div class="box">
-<div class="profile">
+
 <h3 id="username">Loading...</h3>
-<small id="userRole"></small>
-</div>
+
 </div>
 
-<!-- CREATE -->
+
+<!-- CUSTOMER INFO -->
 <div class="box">
 
-<h3>Create Post</h3>
+<h3>Delivery Info</h3>
 
-<input type="file" id="postImage" accept="image/*" onchange="previewImg()">
-
-<img id="preview" class="preview">
-
-<input id="caption" placeholder="Write caption">
-
-<button onclick="uploadPost()">Post</button>
+<input id="name" placeholder="Your Name">
+<input id="mobile" placeholder="Mobile Number">
+<textarea id="address" placeholder="Address"
+style="width:100%;padding:8px"></textarea>
 
 </div>
 
-<!-- FEED -->
+
+<!-- PRODUCTS -->
 <div class="box">
 
-<h3>Latest Feed</h3>
+<h3>Products</h3>
 
-<div id="feed">Loading...</div>
+<div id="productList">Loading...</div>
 
 </div>
 
-<!-- LOGOUT -->
+
+<!-- ORDER -->
 <div class="box">
+
+<button onclick="sendOrder()">📲 Order on WhatsApp</button>
+
 <button class="logout" onclick="logout()">Logout</button>
+
 </div>
-
-
-<!-- FIREBASE -->
-<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-storage-compat.js"></script>
 
 
 <script>
 
-/* CONFIG */
+/* FIREBASE */
 firebase.initializeApp({
-apiKey: "AIzaSyA8O4kOinBczBQ8r9mbtOdH98X70ezpgYk",
-authDomain: "new-prototype-s7zo4.firebaseapp.com",
-projectId: "new-prototype-s7zo4",
-storageBucket: "new-prototype-s7zo4.appspot.com"
+apiKey:"AIzaSyA8O4kOinBczBQ8r9mbtOdH98X70ezpgYk",
+authDomain:"new-prototype-s7zo4.firebaseapp.com",
+projectId:"new-prototype-s7zo4"
 });
 
-const auth=firebase.auth();
-const db=firebase.firestore();
-const storage=firebase.storage();
+const auth = firebase.auth();
+const db = firebase.firestore();
 
 let currentUser=null;
-let currentName="";
 
 
-/* AUTH */
+/* AUTH CHECK */
 auth.onAuthStateChanged(async user=>{
 
 if(!user){
-location="index.html";
+location="login.html";
 return;
 }
 
 currentUser=user;
 
-let doc=await db.collection("Users").doc(user.uid).get();
+loadProfile();
+loadProducts();
+
+});
+
+
+/* PROFILE */
+async function loadProfile(){
+
+let doc=await db.collection("Users")
+.doc(currentUser.uid).get();
 
 if(doc.exists){
 
-currentName=doc.data().name;
+username.innerText="👤 "+doc.data().name;
 
-username.innerText="👤 "+currentName;
-userRole.innerText="("+doc.data().role+")";
+name.value=doc.data().name;
+mobile.value=doc.data().phone;
 
-}
-
-loadPosts();
-
-});
-
-
-/* PREVIEW */
-function previewImg(){
-
-let f=postImage.files[0];
-
-if(f){
-preview.src=URL.createObjectURL(f);
-preview.style.display="block";
 }
 
 }
 
 
-/* UPLOAD */
-async function uploadPost(){
+/* LOAD PRODUCTS */
+async function loadProducts(){
 
-let file=postImage.files[0];
-let cap=caption.value.trim();
+let list=document.getElementById("productList");
 
-if(!file){
-alert("Select image");
+list.innerHTML="Loading...";
+
+let snap=await db.collection("Products")
+.orderBy("time","desc").get();
+
+list.innerHTML="";
+
+if(snap.empty){
+list.innerHTML="No Products ❌";
 return;
 }
-
-let ref=storage.ref("posts/"+Date.now()+file.name);
-
-await ref.put(file);
-
-let url=await ref.getDownloadURL();
-
-await db.collection("Posts").add({
-
-uid:currentUser.uid,
-username:currentName,
-image:url,
-caption:cap,
-likes:0,
-likedBy:[],
-time:firebase.firestore.FieldValue.serverTimestamp()
-
-});
-
-alert("Posted ✅");
-
-postImage.value="";
-caption.value="";
-preview.style.display="none";
-
-loadPosts();
-
-}
-
-
-/* LOAD */
-async function loadPosts(){
-
-feed.innerHTML="Loading...";
-
-let snap=await db.collection("Posts")
-.orderBy("time","desc")
-.get();
-
-feed.innerHTML="";
 
 snap.forEach(doc=>{
 
 let p=doc.data();
 
-let liked=(p.likedBy||[]).includes(currentUser.uid);
+if(p.stock<=0) return;
 
-feed.innerHTML+=`
+list.innerHTML+=`
 
-<div class="post">
+<div class="product">
 
-<small>👤 ${p.username}</small>
+<b>${p.name}</b><br>
+₹${p.price}<br>
+Stock: ${p.stock}<br>
 
-<img src="${p.image}">
-
-<p>${p.caption||""}</p>
-
-<div class="actions">
-
-<span class="like" style="color:${liked?'red':'#0072bc'}"
-onclick="likePost('${doc.id}')">
-
-❤️ ${p.likes||0}
-
-</span>
-
-${p.uid===currentUser.uid?
-
-`<span class="delete" onclick="deletePost('${doc.id}','${p.image}')">
-🗑 Delete
-</span>`:""}
-
-</div>
+Qty:
+<input class="qty"
+id="qty_${doc.id}"
+type="number"
+min="0"
+value="0">
 
 </div>
 
@@ -286,44 +208,73 @@ ${p.uid===currentUser.uid?
 }
 
 
-/* LIKE */
-async function likePost(id){
+/* SEND ORDER */
+async function sendOrder(){
 
-let ref=db.collection("Posts").doc(id);
+let cname=name.value.trim();
+let cmobile=mobile.value.trim();
+let caddr=address.value.trim();
 
-let snap=await ref.get();
-
-let data=snap.data();
-
-let arr=data.likedBy||[];
-
-if(arr.includes(currentUser.uid)){
-alert("Already liked ❤️");
+if(!cname||!cmobile||!caddr){
+alert("Fill delivery info ❌");
 return;
 }
 
-arr.push(currentUser.uid);
+let snap=await db.collection("Products").get();
 
-await ref.update({
-likedBy:arr,
-likes:arr.length
-});
+let items="";
+let total=0;
 
-loadPosts();
+snap.forEach(doc=>{
+
+let p=doc.data();
+
+let q=document.getElementById("qty_"+doc.id);
+
+if(q && q.value>0){
+
+items+=p.name+" x "+q.value+"%0A";
+total+=p.price*q.value;
 
 }
 
+});
 
-/* DELETE */
-async function deletePost(id,url){
+if(items==""){
+alert("Select product ❌");
+return;
+}
 
-if(!confirm("Delete post?"))return;
 
-await db.collection("Posts").doc(id).delete();
+/* SAVE ORDER */
+await db.collection("Orders").add({
 
-await storage.refFromURL(url).delete();
+name:cname,
+mobile:cmobile,
+address:caddr,
+items:items,
+total:total,
+status:"Pending",
+uid:currentUser.uid,
+time:firebase.firestore.FieldValue.serverTimestamp()
 
-loadPosts();
+});
+
+
+/* WHATSAPP */
+let msg=
+"🛒 New Order%0A%0A"+
+"Name: "+cname+"%0A"+
+"Mobile: "+cmobile+"%0A"+
+"Address: "+caddr+"%0A%0A"+
+items+
+"%0A💰 Total: ₹"+total;
+
+window.open(
+"https://wa.me/919336678937?text="+msg
+);
+
+alert("Order Sent ✅");
 
 }
 
@@ -332,7 +283,7 @@ loadPosts();
 function logout(){
 
 auth.signOut().then(()=>{
-location="index.html";
+location="login.html";
 });
 
 }
