@@ -3,113 +3,137 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Mumbai Elite App</title>
-
-<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+<title>Aftab Local Store</title>
 
 <style>
-body{margin:0;font-family:Arial;background:#f2f2f2}
+body{font-family:Arial;margin:0;background:#f2f2f2}
 
 header{
-background:#007bff;
+background:#28a745;
 color:white;
-padding:12px;
+padding:15px;
 text-align:center;
 font-size:20px;
 }
 
-.page{display:none;padding:15px;margin-bottom:70px}
-.active{display:block}
-
-.card{
+.product{
 background:white;
+margin:10px;
 padding:15px;
 border-radius:10px;
-margin-bottom:15px
 }
 
-input,button{
-width:100%;
-padding:10px;
-margin:5px 0;
+.qty{
+width:60px;
+padding:5px;
 }
 
-.tabs{
-position:fixed;
-bottom:0;
-width:100%;
-display:flex;
-background:white;
-border-top:1px solid #ccc;
-}
-
-.tabs button{
-flex:1;
-border:none;
-background:none;
-padding:10px;
-font-size:14px;
-}
-
-.tabs .activeTab{
-color:#007bff;
-font-weight:bold;
-}
-
-.logout{
-background:red;
+.orderBtn{
+background:#25D366;
 color:white;
 border:none;
+width:100%;
+padding:12px;
+font-size:16px;
+border-radius:6px;
+margin:20px 0;
 }
 </style>
 </head>
 
 <body>
 
-<header>Mumbai Elite 📱</header>
+<header>🛒 Aftab Grocery Store</header>
 
-<!-- LOGIN -->
-<div id="login" class="page active">
+<h3 style="padding-left:10px">🥛 Milk</h3>
 
-<div class="card">
-<h3>Login</h3>
-
-<input id="email" type="email" placeholder="Email">
-<input id="pass" type="password" placeholder="Password">
-
-<button onclick="login()">Login</button>
-
-<p onclick="show('signup')" style="cursor:pointer;color:blue">
-New user? Signup
-</p>
+<div class="product">
+Milk 1L - ₹60
+<input class="qty" id="m1" type="number" value="0">
 </div>
 
+<h3 style="padding-left:10px">🥦 Grocery</h3>
+
+<div class="product">
+Rice 1Kg - ₹50
+<input class="qty" id="r1" type="number" value="0">
+</div>
+
+<div class="product">
+Bread - ₹40
+<input class="qty" id="b1" type="number" value="0">
+</div>
+
+<div class="product">
+Vegetables Pack - ₹100
+<input class="qty" id="v1" type="number" value="0">
+</div>
+
+<h3 style="padding-left:10px">🍔 Food</h3>
+
+<div class="product">
+Burger - ₹80
+<input class="qty" id="f1" type="number" value="0">
+</div>
+
+<div class="product">
+Samosa (2pc) - ₹30
+<input class="qty" id="f2" type="number" value="0">
 </div>
 
 
-<!-- SIGNUP -->
-<div id="signup" class="page">
-
-<div class="card">
-<h3>Signup</h3>
-
-<input id="name" placeholder="Name">
-<input id="semail" type="email" placeholder="Email">
-<input id="spass" type="password" placeholder="Password">
-
-<button onclick="signup()">Create Account</button>
-
-<p onclick="show('login')" style="cursor:pointer;color:blue">
-Back to Login
-</p>
-</div>
-
-</div>
+<button class="orderBtn" onclick="sendOrder()">📲 Order on WhatsApp</button>
 
 
-<!-- HOME -->
+<script>
+function sendOrder(){
+
+let items="";
+let total=0;
+
+let list=[
+["Milk 1L",60,"m1"],
+["Rice 1Kg",50,"r1"],
+["Bread",40,"b1"],
+["Vegetables",100,"v1"],
+["Burger",80,"f1"],
+["Samosa",30,"f2"]
+];
+
+list.forEach(i=>{
+
+let qty=document.getElementById(i[2]).value;
+
+if(qty>0){
+
+items+=i[0]+" x "+qty+"%0A";
+total+=i[1]*qty;
+
+}
+
+});
+
+if(items==""){
+alert("Please select items");
+return;
+}
+
+let msg=
+"Hello Aftab Store,%0A%0A"+
+"My Order:%0A"+
+items+
+"%0ATotal: ₹"+total+
+"%0APayment: Cash";
+
+let phone="91XXXXXXXXXX"; // <-- Apna number yahan daalo
+
+window.open("https://wa.me/"+phone+"?text="+msg);
+
+}
+</script>
+
+</body>
+</html><!-- HOME -->
 <div id="home" class="page">
 
 <div class="card">
