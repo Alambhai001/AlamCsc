@@ -1,28 +1,84 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Register</title>
+<title>Mumbai Elite | Register</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
 
 <style>
+
 body{
-  font-family: Arial;
-  background:#f2f2f2;
-  text-align:center;
+font-family:Arial;
+background:linear-gradient(135deg,#0072bc,#00c6ff);
+display:flex;
+justify-content:center;
+align-items:center;
+height:100vh;
+margin:0;
 }
 
+/* BOX */
 .box{
-  background:white;
-  width:300px;
-  margin:100px auto;
-  padding:20px;
-  border-radius:5px;
+background:white;
+width:320px;
+padding:25px;
+border-radius:12px;
+text-align:center;
+box-shadow:0 10px 25px rgba(0,0,0,0.3);
 }
 
-input,button{
-  width:90%;
-  padding:10px;
-  margin:10px;
+h2{margin-bottom:15px}
+
+/* INPUT */
+input,select{
+width:100%;
+padding:12px;
+margin:8px 0;
+border-radius:6px;
+border:1px solid #ccc;
+font-size:14px;
 }
+
+/* BUTTON */
+button{
+width:100%;
+padding:12px;
+background:#0072bc;
+color:white;
+border:none;
+border-radius:6px;
+font-weight:bold;
+cursor:pointer;
+font-size:15px;
+}
+
+button:disabled{
+background:#999;
+}
+
+/* MSG */
+#msg{
+margin-top:10px;
+font-size:13px;
+color:red;
+}
+
+/* LINK */
+a{
+display:block;
+margin-top:12px;
+color:#0072bc;
+font-size:14px;
+text-decoration:none;
+}
+
+.loading{
+color:green;
+}
+
 </style>
 </head>
 
@@ -30,15 +86,22 @@ input,button{
 
 <div class="box">
 
-<h2>Register</h2>
+<h2>📝 Create Account</h2>
 
-<input type="text" id="username" placeholder="Username" required>
+<input id="name" placeholder="Full Name">
 
-<input type="email" id="email" placeholder="Email ID" required>
+<input type="email" id="email" placeholder="Email">
 
-<input type="password" id="password" placeholder="Password (min 6 digit)" required>
+<input type="password" id="password" placeholder="Password (min 6 chars)">
 
-<button onclick="register()">Register</button>
+<input id="phone" placeholder="Mobile Number">
+
+<select id="role">
+<option value="citizen">Citizen</option>
+<option value="partner">Partner</option>
+</select>
+
+<button id="regBtn" onclick="register()">Register</button>
 
 <p id="msg"></p>
 
@@ -46,39 +109,76 @@ input,button{
 
 </div>
 
+
 <script>
 
-function register(){
+/* FIREBASE */
+const firebaseConfig = {
+apiKey: "AIzaSyA8O4kOinBczBQ8r9mbtOdH98X70ezpgYk",
+authDomain: "new-prototype-s7zo4.firebaseapp.com",
+projectId: "new-prototype-s7zo4"
+};
 
-  let user = document.getElementById("username").value;
-  let email = document.getElementById("email").value;
-  let pass = document.getElementById("password").value;
+firebase.initializeApp(firebaseConfig);
 
-  if(user=="" || email=="" || pass==""){
-    msg("Fill all fields");
-    return;
-  }
+const auth = firebase.auth();
+const db = firebase.firestore();
 
-  if(pass.length < 6){
-    msg("Password minimum 6 digit ka hona chahiye");
-    return;
-  }
 
-  let data = {
-    username:user,
-    email:email,
-    password:pass
-  };
+/* REGISTER */
+async function register(){
 
-  localStorage.setItem("userData",JSON.stringify(data));
+let name=document.getElementById("name").value.trim();
+let email=document.getElementById("email").value.trim();
+let pass=document.getElementById("password").value;
+let phone=document.getElementById("phone").value.trim();
+let role=document.getElementById("role").value;
 
-  alert("Registration Successful!");
-
-  window.location="login.html";
+if(!name||!email||!pass||!phone){
+msg("Fill all fields");
+return;
 }
 
+if(pass.length<6){
+msg("Password must be 6+ characters");
+return;
+}
+
+regBtn.disabled=true;
+msg("<span class='loading'>Creating account...</span>");
+
+try{
+
+let cred=await auth.createUserWithEmailAndPassword(email,pass);
+
+await db.collection("Users").doc(cred.user.uid).set({
+
+name:name,
+email:email,
+phone:phone,
+role:role,
+status:"Active",
+created:firebase.firestore.FieldValue.serverTimestamp()
+
+});
+
+alert("Registration Successful ✅");
+
+location="login.html";
+
+}catch(e){
+
+msg(e.message);
+regBtn.disabled=false;
+
+}
+
+}
+
+
+/* MESSAGE */
 function msg(t){
-  document.getElementById("msg").innerHTML=t;
+document.getElementById("msg").innerHTML=t;
 }
 
 </script>
