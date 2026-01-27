@@ -6,9 +6,12 @@
 
 <title>Aftab Store App</title>
 
+<!-- PWA -->
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon.png">
+<meta name="theme-color" content="#28a745">
 
+<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
@@ -27,6 +30,7 @@ color:white;
 padding:15px;
 text-align:center;
 font-size:20px;
+font-weight:bold;
 }
 
 .box{
@@ -39,7 +43,9 @@ border-radius:10px;
 input,textarea,button{
 width:100%;
 padding:10px;
-margin:5px 0;
+margin:6px 0;
+border-radius:6px;
+border:1px solid #ccc;
 }
 
 button{
@@ -47,6 +53,11 @@ background:#28a745;
 color:white;
 border:none;
 border-radius:6px;
+font-weight:bold;
+}
+
+.logout{
+background:red;
 }
 
 </style>
@@ -66,7 +77,7 @@ border-radius:6px;
 
 <button onclick="login()">Login</button>
 
-<p id="msg"></p>
+<p id="msg" style="color:red"></p>
 
 </div>
 
@@ -74,7 +85,7 @@ border-radius:6px;
 <!-- STORE -->
 <div id="storeBox" class="box" style="display:none">
 
-<h3>Order</h3>
+<h3>Place Order</h3>
 
 <input id="name" placeholder="Name">
 <input id="mobile" placeholder="Mobile">
@@ -82,81 +93,139 @@ border-radius:6px;
 
 <hr>
 
-Milk (₹60)
+🥛 Milk (₹60)
 <input id="m1" type="number" value="0">
 
-Rice (₹50)
+🍚 Rice (₹50)
 <input id="r1" type="number" value="0">
 
 <br><br>
 
 <button onclick="sendOrder()">Order on WhatsApp</button>
 
-<button onclick="logout()" style="background:red">Logout</button>
+<button class="logout" onclick="logout()">Logout</button>
 
 </div>
 
 
 <script>
 
-// FIREBASE
+/* FIREBASE CONFIG */
 firebase.initializeApp({
 apiKey: "AIzaSyA8O4kOinBczBQ8r9mbtOdH98X70ezpgYk",
 authDomain: "new-prototype-s7zo4.firebaseapp.com",
 projectId: "new-prototype-s7zo4"
 });
 
-const auth=firebase.auth();
-const db=firebase.firestore();
+const auth = firebase.auth();
+const db = firebase.firestore();
 
 
-// LOGIN
+/* AUTO LOGIN */
+auth.onAuthStateChanged(async user=>{
+
+if(user){
+
+let doc = await db.collection("Users").doc(user.uid).get();
+
+if(doc.exists && doc.data().status==="Blocked"){
+
+await auth.signOut();
+msg.innerText="Account Blocked ❌";
+return;
+
+}
+
+showStore();
+
+}
+
+});
+
+
+/* SHOW STORE */
+function showStore(){
+
+loginBox.style.display="none";
+storeBox.style.display="block";
+
+}
+
+
+/* LOGIN */
 async function login(){
 
-let email=document.getElementById("email").value;
-let pass=document.getElementById("pass").value;
+let email = document.getElementById("email").value.trim();
+let pass  = document.getElementById("pass").value.trim();
+
+if(!email || !pass){
+msg.innerText="Fill all fields";
+return;
+}
 
 try{
 
-await auth.signInWithEmailAndPassword(email,pass);
+let res = await auth.signInWithEmailAndPassword(email,pass);
 
-document.getElementById("loginBox").style.display="none";
-document.getElementById("storeBox").style.display="block";
+let doc = await db.collection("Users").doc(res.user.uid).get();
+
+if(doc.exists && doc.data().status==="Blocked"){
+
+await auth.signOut();
+msg.innerText="Account Blocked ❌";
+return;
+
+}
+
+showStore();
 
 }catch{
-document.getElementById("msg").innerText="Wrong Login";
-}
+
+msg.innerText="Wrong Email / Password";
 
 }
 
+}
 
-// LOGOUT
+
+/* LOGOUT */
 function logout(){
 
 auth.signOut();
 
-document.getElementById("loginBox").style.display="block";
-document.getElementById("storeBox").style.display="none";
+loginBox.style.display="block";
+storeBox.style.display="none";
 
 }
 
 
-// ORDER
+/* ORDER */
 function sendOrder(){
 
-let name=name=document.getElementById("name").value;
-let mobile=document.getElementById("mobile").value;
-let address=document.getElementById("address").value;
+let name    = document.getElementById("name").value.trim();
+let mobile  = document.getElementById("mobile").value.trim();
+let address = document.getElementById("address").value.trim();
 
-let m1=document.getElementById("m1").value;
-let r1=document.getElementById("r1").value;
+let m1 = document.getElementById("m1").value;
+let r1 = document.getElementById("r1").value;
 
-let msg="New Order%0A"+
-"Name:"+name+"%0A"+
-"Mobile:"+mobile+"%0A"+
-"Address:"+address+"%0A%0A"+
-"Milk:"+m1+"%0A"+
-"Rice:"+r1;
+if(!name || !mobile || !address){
+alert("Fill all details");
+return;
+}
+
+if(m1==0 && r1==0){
+alert("Select at least 1 item");
+return;
+}
+
+let msg =
+"🛒 New Order%0A%0A"+
+"👤 Name: "+name+"%0A"+
+"📱 Mobile: "+mobile+"%0A"+
+"🏠 Address: "+address+"%0A%0A"+
+"🥛 Milk: "+m1+"%0A"+
+"🍚 Rice: "+r1;
 
 window.open("https://wa.me/919336678937?text="+msg);
 
