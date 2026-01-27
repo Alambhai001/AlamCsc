@@ -4,6 +4,9 @@
 <title>Mumbai Elite | Dashboard</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon.png">
+
 <style>
 body{
 font-family:Arial;
@@ -11,7 +14,6 @@ background:#eef2f5;
 margin:0;
 }
 
-/* HEADER */
 header{
 background:#0072bc;
 color:white;
@@ -21,7 +23,6 @@ font-size:20px;
 font-weight:bold;
 }
 
-/* BOX */
 .box{
 background:white;
 margin:12px;
@@ -36,7 +37,6 @@ align-items:center;
 gap:10px;
 }
 
-/* FORM */
 input,button{
 width:100%;
 padding:10px;
@@ -53,11 +53,8 @@ font-weight:bold;
 cursor:pointer;
 }
 
-button:hover{opacity:0.9}
-
 .logout{background:red}
 
-/* POST */
 .post{
 border:1px solid #ddd;
 padding:10px;
@@ -71,27 +68,14 @@ border-radius:8px;
 margin:5px 0;
 }
 
-.post small{
-color:#666;
-}
-
 .actions{
 display:flex;
 justify-content:space-between;
 margin-top:5px;
 }
 
-.like{
-color:#0072bc;
-cursor:pointer;
-font-size:14px;
-}
-
-.delete{
-color:red;
-cursor:pointer;
-font-size:13px;
-}
+.like{color:#0072bc;cursor:pointer}
+.delete{color:red;cursor:pointer}
 
 .preview{
 width:100%;
@@ -99,9 +83,7 @@ max-height:200px;
 object-fit:cover;
 border-radius:8px;
 display:none;
-margin:5px 0;
 }
-
 </style>
 </head>
 
@@ -109,19 +91,15 @@ margin:5px 0;
 
 <header>📸 Mumbai Elite Feed</header>
 
-
 <!-- PROFILE -->
 <div class="box">
-
 <div class="profile">
 <h3 id="username">Loading...</h3>
 <small id="userRole"></small>
 </div>
-
 </div>
 
-
-<!-- CREATE POST -->
+<!-- CREATE -->
 <div class="box">
 
 <h3>Create Post</h3>
@@ -130,12 +108,11 @@ margin:5px 0;
 
 <img id="preview" class="preview">
 
-<input id="caption" placeholder="Write caption...">
+<input id="caption" placeholder="Write caption">
 
 <button onclick="uploadPost()">Post</button>
 
 </div>
-
 
 <!-- FEED -->
 <div class="box">
@@ -146,12 +123,9 @@ margin:5px 0;
 
 </div>
 
-
 <!-- LOGOUT -->
 <div class="box">
-
 <button class="logout" onclick="logout()">Logout</button>
-
 </div>
 
 
@@ -165,24 +139,23 @@ margin:5px 0;
 <script>
 
 /* CONFIG */
-const firebaseConfig = {
+firebase.initializeApp({
 apiKey: "AIzaSyA8O4kOinBczBQ8r9mbtOdH98X70ezpgYk",
 authDomain: "new-prototype-s7zo4.firebaseapp.com",
 projectId: "new-prototype-s7zo4",
 storageBucket: "new-prototype-s7zo4.appspot.com"
-};
+});
 
-firebase.initializeApp(firebaseConfig);
-
-const auth = firebase.auth();
-const db = firebase.firestore();
-const storage = firebase.storage();
+const auth=firebase.auth();
+const db=firebase.firestore();
+const storage=firebase.storage();
 
 let currentUser=null;
+let currentName="";
 
 
-/* AUTH CHECK */
-auth.onAuthStateChanged(user=>{
+/* AUTH */
+auth.onAuthStateChanged(async user=>{
 
 if(!user){
 location="index.html";
@@ -191,34 +164,29 @@ return;
 
 currentUser=user;
 
-loadProfile();
+let doc=await db.collection("Users").doc(user.uid).get();
+
+if(doc.exists){
+
+currentName=doc.data().name;
+
+username.innerText="👤 "+currentName;
+userRole.innerText="("+doc.data().role+")";
+
+}
+
 loadPosts();
 
 });
 
 
-/* PROFILE */
-async function loadProfile(){
-
-let doc=await db.collection("Users").doc(currentUser.uid).get();
-
-if(doc.exists){
-
-username.innerText="👤 "+doc.data().name;
-userRole.innerText="("+doc.data().role+")";
-
-}
-
-}
-
-
 /* PREVIEW */
 function previewImg(){
 
-let file=postImage.files[0];
+let f=postImage.files[0];
 
-if(file){
-preview.src=URL.createObjectURL(file);
+if(f){
+preview.src=URL.createObjectURL(f);
 preview.style.display="block";
 }
 
@@ -229,7 +197,7 @@ preview.style.display="block";
 async function uploadPost(){
 
 let file=postImage.files[0];
-let caption=caption.value;
+let cap=caption.value.trim();
 
 if(!file){
 alert("Select image");
@@ -245,9 +213,11 @@ let url=await ref.getDownloadURL();
 await db.collection("Posts").add({
 
 uid:currentUser.uid,
+username:currentName,
 image:url,
-caption:caption,
+caption:cap,
 likes:0,
+likedBy:[],
 time:firebase.firestore.FieldValue.serverTimestamp()
 
 });
@@ -263,10 +233,8 @@ loadPosts();
 }
 
 
-/* LOAD POSTS */
+/* LOAD */
 async function loadPosts(){
-
-let feed=document.getElementById("feed");
 
 feed.innerHTML="Loading...";
 
@@ -280,11 +248,13 @@ snap.forEach(doc=>{
 
 let p=doc.data();
 
+let liked=(p.likedBy||[]).includes(currentUser.uid);
+
 feed.innerHTML+=`
 
 <div class="post">
 
-<small>👤 ${p.uid}</small>
+<small>👤 ${p.username}</small>
 
 <img src="${p.image}">
 
@@ -292,11 +262,15 @@ feed.innerHTML+=`
 
 <div class="actions">
 
-<span class="like" onclick="likePost('${doc.id}',${p.likes||0})">
+<span class="like" style="color:${liked?'red':'#0072bc'}"
+onclick="likePost('${doc.id}')">
+
 ❤️ ${p.likes||0}
+
 </span>
 
 ${p.uid===currentUser.uid?
+
 `<span class="delete" onclick="deletePost('${doc.id}','${p.image}')">
 🗑 Delete
 </span>`:""}
@@ -313,10 +287,26 @@ ${p.uid===currentUser.uid?
 
 
 /* LIKE */
-async function likePost(id,count){
+async function likePost(id){
 
-await db.collection("Posts").doc(id).update({
-likes:count+1
+let ref=db.collection("Posts").doc(id);
+
+let snap=await ref.get();
+
+let data=snap.data();
+
+let arr=data.likedBy||[];
+
+if(arr.includes(currentUser.uid)){
+alert("Already liked ❤️");
+return;
+}
+
+arr.push(currentUser.uid);
+
+await ref.update({
+likedBy:arr,
+likes:arr.length
 });
 
 loadPosts();
@@ -331,9 +321,7 @@ if(!confirm("Delete post?"))return;
 
 await db.collection("Posts").doc(id).delete();
 
-let ref=storage.refFromURL(url);
-
-await ref.delete();
+await storage.refFromURL(url).delete();
 
 loadPosts();
 
