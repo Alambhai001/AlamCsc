@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>AalamS - Compact Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { box-sizing: border-box; }
+        
+        body {
+            margin: 0; padding: 0;
+            background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), 
+                        url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&q=80&w=1500');
+            background-size: cover; background-position: center;
+            height: 100vh; width: 100vw;
+            font-family: 'Poppins', sans-serif;
+            display: flex; flex-direction: column; align-items: center;
+            color: white; overflow: hidden; /* स्क्रीन से बाहर कुछ नहीं जाएगा */
+        }
+
+        /* 1. टाइम और तारीख (Compact Size) */
+        .datetime-box {
+            position: absolute; top: 15px; right: 15px; text-align: center;
+            background: rgba(0, 0, 0, 0.5); padding: 8px 15px; border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        #time { font-size: 20px; font-weight: 700; }
+        #date { font-size: 11px; color: #bbb; }
+
+        /* 2. AalamS लोगो (थोड़ा छोटा किया गया) */
+        .logo { margin-top: 80px; font-size: 65px; font-weight: 800; letter-spacing: -3px; }
+        .a1{color:#4285F4} .a2{color:#EA4335} .a3{color:#FBBC05} .a4{color:#4285F4} .a5{color:#34A853} .a6{color:#EA4335}
+
+        /* 3. सर्च बार */
+        .search-wrapper { width: 85%; max-width: 500px; margin-top: 30px; position: relative; }
+        #query {
+            width: 100%; padding: 15px 90px 15px 25px; border-radius: 40px; border: none;
+            font-size: 16px; outline: none; background: rgba(255,255,255,0.95); color: #222;
+        }
+        .tools { position: absolute; right: 15px; top: 12px; display: flex; gap: 12px; }
+        .tools i { cursor: pointer; font-size: 20px; color: #4285F4; }
+
+        /* 4. डॉक (Shortcuts) */
+        .dock {
+            margin-top: 35px; display: flex; gap: 25px;
+            background: rgba(255, 255, 255, 0.1); padding: 12px 30px; border-radius: 50px;
+            backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.2);
+        }
+        .dock a { font-size: 28px; text-decoration: none; transition: 0.3s; }
+        .dock a:hover { transform: translateY(-10px); }
+        .fa-youtube { color: #FF0000; } 
+        .fa-instagram { color: #E1306C; } 
+        .fa-facebook { color: #1877F2; } 
+        .fa-robot { color: #FFB400; }
+
+        /* 5. ट्रेंडिंग न्यूज़ (Smaller Box) */
+        .trending-now {
+            width: 85%; max-width: 450px; margin-top: 35px;
+            background: rgba(0, 0, 0, 0.4); padding: 15px; border-radius: 15px;
+            backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.1);
+        }
+        .trending-now h3 { margin: 0 0 8px 0; font-size: 16px; border-bottom: 1px solid rgba(255,255,255,0.2); }
+        .news-line { font-size: 13px; margin: 5px 0; color: #ddd; }
+    </style>
+</head>
+<body>
+
+    <div class="datetime-box">
+        <div id="time">00:00:00</div>
+        <div id="date">Loading...</div>
+    </div>
+
+    <div class="logo">
+        <span class="a1">A</span><span class="a2">a</span><span class="a3">l</span><span class="a4">a</span><span class="a5">m</span><span class="a6">S</span>
+    </div>
+
+    <div class="search-wrapper">
+        <input type="text" id="query" placeholder="Search AalamS...">
+        <div class="tools">
+            <i class="fas fa-microphone" onclick="startVoice()"></i>
+            <i class="fas fa-camera" onclick="window.location.href='https://www.google.com/searchbyimage/upload'"></i>
+        </div>
+    </div>
+
+    <div class="dock">
+        <a href="https://youtube.com"><i class="fab fa-youtube"></i></a>
+        <a href="https://instagram.com"><i class="fab fa-instagram"></i></a>
+        <a href="https://facebook.com"><i class="fab fa-facebook"></i></a>
+        <a href="https://chat.openai.com"><i class="fas fa-robot"></i></a>
+    </div>
+
+    <div class="trending-now">
+        <h3><i class="fas fa-fire"></i> Trending</h3>
+        <div class="news-line">• Top India Headlines</div>
+        <div class="news-line">• New Tech Launches</div>
+    </div>
+
+    <script>
+        setInterval(() => {
+            const n = new Date();
+            document.getElementById('time').innerText = n.toLocaleTimeString();
+            document.getElementById('date').innerText = n.toDateString();
+        }, 1000);
+
+        function search() {
+            const q = document.getElementById('query').value;
+            if(q.trim() !== "") window.location.href = `https://www.google.com/search?q=${encodeURIComponent(q)}`;
+        }
+
+        function startVoice() {
+            const rec = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+            rec.lang = 'hi-IN';
+            rec.onresult = (e) => {
+                document.getElementById('query').value = e.results[0][0].transcript;
+                search();
+            };
+            rec.start();
+        }
+
+        document.getElementById('query').addEventListener('keypress', (e) => { if(e.key === 'Enter') search(); });
+    </script>
+</body>
+</html>
